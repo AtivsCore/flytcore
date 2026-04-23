@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+
+<!-- ================================================================
+  PROPRIEDADE INTELECTUAL REGISTRADA
+  Sistema: AtivsCore — Asset Lifecycle Intelligence Engine
+  Registro INPI: Programa de Computador — Código 730
+  Autor: Murilo Rafael Voltolini
+  CPF: 037.761.049-61
+  Data de Criação: Abril de 2026
+  Versão: 1.7
+  Licença: Propriedade Intelectual Privada
+  
+  Este software, sua arquitetura, algoritmos, lógica de negócios,
+  design de interface e documentação técnica são protegidos por
+  direitos autorais conforme Lei 9.609/98 (Lei de Software) e
+  registrados no Instituto Nacional da Propriedade Industrial (INPI).
+  
+  Qualquer reprodução, distribuição, modificação ou uso não autorizado
+  constitui violação de direitos autorais e está sujeita às penalidades
+  previstas na legislação brasileira.
+  
+  © 2026 Murilo Rafael Voltolini. Todos os direitos reservados.
+================================================================ -->
+<meta name="author" content="Murilo Rafael Voltolini">
+<meta name="copyright" content="© 2026 Murilo Rafael Voltolini - AtivsCore">
+<meta name="application-name" content="AtivsCore — Asset Lifecycle Intelligence Engine">
+<meta name="creator" content="Murilo Rafael Voltolini | CPF: 037.761.049-61">
+<meta name="rights" content="Propriedade Intelectual registrada no INPI — Código 730">
+<meta name="description" content="AtivsCore — Motor de inteligência para gestão do ciclo de vida de ativos físicos. Registro INPI. Autor: Murilo Rafael Voltolini.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlytCore — Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --bg: #F2F1EE;
+  --bg-card: #FFFFFF;
+  --bg-hover: #F8F7F5;
+  --bg-sidebar: #0E0E0E;
+  --bg-sidebar-hover: #1A1A1A;
+  --bg-sidebar-active: #252525;
+  --bg-input: #F5F4F1;
+  --border: #D8D5CF;
+  --border-dark: #B8B5AE;
+  --text: #0E0E0E;
+  --text-secondary: #5C5A55;
+  --text-muted: #9A9790;
+  --text-sidebar: #A0A0A0;
+  --text-sidebar-active: #FFFFFF;
+  --accent: #0066FF;
+  --accent-light: #E8F0FF;
+  --green: #1A8C3F;
+  --green-bg: #E8F5EC;
+  --green-border: #B8E0C2;
+  --yellow: #B8860B;
+  --yellow-bg: #FFF8E1;
+  --yellow-border: #F0D88A;
+  --red: #CC2936;
+  --red-bg: #FDE8EA;
+  --red-border: #F0B0B6;
+  --orange: #D4600A;
+  --orange-bg: #FFF0E5;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Outfit', sans-serif;
+  --radius: 3px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+  --shadow: 0 1px 4px rgba(0,0,0,0.08);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,0.1);
+  --sidebar-w: 256px;
+  --sidebar-collapsed: 56px;
+  --topbar-h: 52px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { font-size:14px; }
+body { font-family:var(--sans); background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+
+/* =========================================
+   SIDEBAR
+   ========================================= */
+.sidebar {
+  position:fixed; top:0; left:0; bottom:0; width:var(--sidebar-w);
+  background:var(--bg-sidebar); z-index:200; display:flex; flex-direction:column;
+  transition: width 0.25s cubic-bezier(0.4,0,0.2,1);
+  overflow:hidden; border-right:1px solid #222;
+}
+.sidebar.collapsed { width:var(--sidebar-collapsed); }
+.sidebar.collapsed .sidebar-label,
+.sidebar.collapsed .nav-text,
+.sidebar.collapsed .user-info,
+.sidebar.collapsed .logo-text,
+.sidebar.collapsed .logo-sub,
+.sidebar.collapsed .nav-badge { display:none; }
+.sidebar.collapsed .nav-item { justify-content:center; padding:10px 0; }
+.sidebar.collapsed .sidebar-header { padding:14px 0; justify-content:center; }
+.sidebar.collapsed .sidebar-footer { justify-content:center; padding:12px 0; }
+.sidebar.collapsed .collapse-btn { transform:rotate(180deg); }
+
+.sidebar-header {
+  padding:18px 16px; display:flex; align-items:center; gap:10px;
+  border-bottom:1px solid #222; flex-shrink:0;
+}
+.logo-mark {
+  width:28px; height:28px; background:var(--accent); border-radius:2px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-weight:500; font-size:11px; color:#fff; flex-shrink:0;
+  letter-spacing:-0.5px;
+}
+.logo-text { font-family:var(--mono); font-weight:500; font-size:13px; color:#fff; letter-spacing:1.5px; white-space:nowrap; }
+.logo-sub { font-size:9px; color:#666; letter-spacing:1px; text-transform:uppercase; margin-top:1px; white-space:nowrap; }
+
+.sidebar-nav { flex:1; padding:12px 8px; overflow-y:auto; overflow-x:hidden; }
+.sidebar-label {
+  font-size:9px; text-transform:uppercase; letter-spacing:2px; color:#555;
+  padding:16px 8px 6px; font-weight:500; white-space:nowrap;
+}
+.nav-item {
+  display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:var(--radius);
+  cursor:pointer; color:var(--text-sidebar); font-size:12.5px; font-weight:500;
+  transition:all 0.12s; margin-bottom:1px; white-space:nowrap; position:relative;
+}
+.nav-item:hover { background:var(--bg-sidebar-hover); color:#ccc; }
+.nav-item.active { background:var(--bg-sidebar-active); color:var(--text-sidebar-active); }
+.nav-item.active::before {
+  content:''; position:absolute; left:0; top:4px; bottom:4px; width:2px;
+  background:var(--accent); border-radius:0 1px 1px 0;
+}
+.nav-item svg { width:16px; height:16px; flex-shrink:0; opacity:0.7; }
+.nav-item.active svg { opacity:1; }
+.nav-text { white-space:nowrap; }
+.nav-badge {
+  margin-left:auto; background:var(--red); color:#fff; font-size:9px; font-weight:700;
+  padding:2px 6px; border-radius:2px; font-family:var(--mono); line-height:1.2;
+}
+.nav-badge.yellow { background:var(--yellow); }
+
+.sidebar-footer {
+  padding:12px 16px; border-top:1px solid #222; display:flex; align-items:center; gap:10px; flex-shrink:0;
+}
+.avatar-sm {
+  width:28px; height:28px; border-radius:2px; background:#333;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:600; color:var(--accent); font-size:10px; flex-shrink:0;
+  font-family:var(--mono);
+}
+.user-info { white-space:nowrap; }
+.user-name { font-size:11px; font-weight:600; color:#ccc; }
+.user-role { font-size:9px; color:#666; text-transform:uppercase; letter-spacing:0.5px; }
+
+.collapse-btn {
+  position:absolute; top:16px; right:-12px; width:24px; height:24px;
+  background:var(--bg-sidebar); border:1px solid #333; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  color:#888; font-size:12px; z-index:201; transition:transform 0.25s, background 0.15s;
+}
+.collapse-btn:hover { background:#222; color:#fff; }
+
+/* =========================================
+   MAIN AREA
+   ========================================= */
+.main {
+  margin-left:var(--sidebar-w); transition:margin-left 0.25s cubic-bezier(0.4,0,0.2,1);
+  min-height:100vh;
+}
+.sidebar.collapsed ~ .main { margin-left:var(--sidebar-collapsed); }
+
+.topbar {
+  height:var(--topbar-h); background:var(--bg-card); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 24px; position:sticky; top:0; z-index:100;
+  box-shadow:var(--shadow-sm);
+}
+.topbar-left { display:flex; align-items:center; gap:12px; }
+.topbar-title { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+.topbar-divider { width:1px; height:20px; background:var(--border); }
+.topbar-sub { font-size:11px; color:var(--text-muted); font-weight:400; }
+.topbar-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+.topbar-btn {
+  background:var(--bg); border:1px solid var(--border); color:var(--text-secondary);
+  padding:6px 12px; border-radius:var(--radius); font-size:11px; cursor:pointer;
+  font-family:var(--sans); font-weight:500; display:flex; align-items:center; gap:6px;
+  transition:all 0.12s;
+}
+.topbar-btn:hover { border-color:var(--text); color:var(--text); }
+.topbar-dot { width:6px; height:6px; border-radius:50%; }
+.topbar-dot.red { background:var(--red); }
+.topbar-dot.green { background:var(--green); }
+.topbar-time { font-family:var(--mono); font-size:11px; color:var(--text-muted); }
+
+.content { padding:20px 24px 40px; }
+
+/* =========================================
+   BANNERS
+   ========================================= */
+.banner {
+  display:flex; align-items:center; gap:8px; padding:8px 14px;
+  border-radius:var(--radius); font-size:11px; font-weight:600; margin-bottom:16px;
+  border:1px solid;
+}
+.banner.warning { background:var(--yellow-bg); border-color:var(--yellow-border); color:var(--yellow); }
+.banner.danger { background:var(--red-bg); border-color:var(--red-border); color:var(--red); }
+.banner.info { background:var(--accent-light); border-color:#B8D4FF; color:var(--accent); }
+.banner-icon { font-size:14px; flex-shrink:0; }
+.banner-text { flex:1; }
+.banner-action { margin-left:auto; text-decoration:underline; cursor:pointer; font-weight:700; }
+
+/* =========================================
+   KPI GRID
+   ========================================= */
+.kpi-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin-bottom:20px; }
+.kpi {
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
+  padding:14px 16px; box-shadow:var(--shadow-sm); transition:box-shadow 0.15s, border-color 0.15s;
+}
+.kpi:hover { box-shadow:var(--shadow); border-color:var(--border-dark); }
+.kpi-label { font-size:9px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600; margin-bottom:6px; }
+.kpi-value { font-family:var(--mono); font-size:26px; font-weight:500; line-height:1; }
+.kpi-sub { font-size:10px; color:var(--text-secondary); margin-top:6px; display:flex; align-items:center; gap:4px; }
+.kpi-tag { display:inline-flex; padding:1px 5px; border-radius:2px; font-size:9px; font-weight:700; font-family:var(--mono); }
+.kpi-tag.up { background:var(--green-bg); color:var(--green); }
+.kpi-tag.down { background:var(--red-bg); color:var(--red); }
+.kpi-tag.neutral { background:var(--bg); color:var(--text-muted); }
+
+/* =========================================
+   VALUE BAR
+   ========================================= */
+.value-bar {
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
+  padding:16px 20px; margin-bottom:20px; display:flex; align-items:center; gap:24px;
+  box-shadow:var(--shadow-sm);
+}
+.value-bar-main { }
+.value-bar-amount { font-family:var(--mono); font-size:28px; font-weight:500; }
+.value-bar-label { font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px; }
+.value-bar-divider { width:1px; height:40px; background:var(--border); }
+.value-bar-metric { text-align:center; }
+.value-bar-metric-value { font-family:var(--mono); font-size:22px; font-weight:500; }
+.value-bar-metric-label { font-size:9px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px; }
+.onboarding-bar { margin-left:auto; display:flex; align-items:center; gap:10px; }
+.onboarding-track { width:160px; height:6px; background:var(--bg); border-radius:1px; overflow:hidden; border:1px solid var(--border); }
+.onboarding-fill { height:100%; background:var(--accent); border-radius:1px; }
+.onboarding-text { font-size:10px; color:var(--text-muted); font-family:var(--mono); white-space:nowrap; }
+
+/* =========================================
+   LAYOUT GRID
+   ========================================= */
+.grid-2 { display:grid; grid-template-columns:2fr 1fr; gap:16px; margin-bottom:20px; }
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:20px; }
+.grid-equal { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+.full-width { margin-bottom:20px; }
+
+/* =========================================
+   CARD
+   ========================================= */
+.card {
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
+  box-shadow:var(--shadow-sm); overflow:hidden;
+}
+.card-head {
+  padding:12px 16px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.card-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+.card-badge { font-size:9px; padding:3px 8px; border-radius:2px; font-weight:700; font-family:var(--mono); }
+.card-body { padding:16px; }
+.card-body.flush { padding:0; }
+
+/* =========================================
+   TABLE
+   ========================================= */
+.tbl { width:100%; border-collapse:collapse; }
+.tbl th {
+  text-align:left; font-size:9px; text-transform:uppercase; letter-spacing:1.5px;
+  color:var(--text-muted); font-weight:600; padding:8px 12px;
+  border-bottom:2px solid var(--border); background:var(--bg);
+}
+.tbl td { padding:10px 12px; font-size:12px; border-bottom:1px solid var(--border); transition:background 0.1s; }
+.tbl tr:hover td { background:var(--bg-hover); }
+.tbl tr:last-child td { border-bottom:none; }
+.mono { font-family:var(--mono); font-weight:500; }
+.clickable { cursor:pointer; }
+
+/* Status */
+.status { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; }
+.status-dot { width:7px; height:7px; border-radius:1px; flex-shrink:0; }
+.status-dot.green { background:var(--green); }
+.status-dot.yellow { background:var(--yellow); }
+.status-dot.red { background:var(--red); }
+.status-dot.blue { background:var(--accent); }
+
+/* Health bar */
+.health { display:flex; align-items:center; gap:6px; }
+.health-track { width:60px; height:5px; background:var(--bg); border-radius:1px; overflow:hidden; border:1px solid var(--border); }
+.health-fill { height:100%; border-radius:1px; }
+.health-num { font-family:var(--mono); font-size:11px; font-weight:500; width:24px; text-align:right; }
+
+/* Criticality */
+.crit { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:2px; font-size:9px; font-weight:700; font-family:var(--mono); }
+.crit.a { background:var(--red-bg); color:var(--red); border:1px solid var(--red-border); }
+.crit.b { background:var(--yellow-bg); color:var(--yellow); border:1px solid var(--yellow-border); }
+.crit.c { background:var(--bg); color:var(--text-muted); border:1px solid var(--border); }
+
+/* =========================================
+   BACKLOG
+   ========================================= */
+.backlog-header {
+  display:flex; align-items:center; gap:12px; padding:12px 16px;
+  background:var(--red-bg); border-bottom:1px solid var(--red-border);
+}
+.backlog-header-icon { font-size:18px; }
+.backlog-header-text { font-size:12px; font-weight:700; color:var(--red); }
+.backlog-header-sub { font-size:10px; color:var(--text-secondary); font-weight:400; }
+.backlog-note {
+  padding:6px 16px; background:var(--bg); border-bottom:1px solid var(--border);
+  font-size:9px; color:var(--text-muted); font-family:var(--mono);
+}
+
+/* Chart placeholder */
+.chart-area {
+  height:140px; background:var(--bg); border:1px dashed var(--border); border-radius:var(--radius);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; margin:12px 0;
+  position:relative; overflow:hidden;
+}
+.chart-bars { display:flex; align-items:flex-end; gap:4px; height:100px; padding:0 20px; }
+.chart-bar { width:18px; border-radius:2px 2px 0 0; transition:height 0.3s; }
+.chart-bar.in { background:var(--red); opacity:0.7; }
+.chart-bar.out { background:var(--green); opacity:0.7; }
+.chart-legend { display:flex; gap:16px; margin-top:6px; font-size:9px; color:var(--text-muted); }
+.chart-legend-dot { width:8px; height:8px; border-radius:1px; display:inline-block; vertical-align:middle; margin-right:4px; }
+
+/* =========================================
+   SCORE
+   ========================================= */
+.score-block { text-align:center; padding:20px; }
+.score-ring {
+  width:100px; height:100px; border-radius:50%; margin:0 auto 12px;
+  background: conic-gradient(var(--accent) 0% 87%, var(--border) 87% 100%);
+  display:flex; align-items:center; justify-content:center; position:relative;
+}
+.score-ring::after {
+  content:''; position:absolute; inset:6px; border-radius:50%; background:var(--bg-card);
+}
+.score-val { font-family:var(--mono); font-size:28px; font-weight:500; z-index:1; color:var(--accent); }
+.score-metrics { text-align:left; padding:0 8px; }
+.score-row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid var(--border); font-size:11px; }
+.score-row:last-child { border-bottom:none; }
+.score-row-label { color:var(--text-secondary); }
+.score-row-value { font-family:var(--mono); font-weight:500; }
+
+/* =========================================
+   ACTIVITY FEED
+   ========================================= */
+.feed-item { display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+.feed-item:last-child { border-bottom:none; }
+.feed-icon {
+  width:26px; height:26px; border-radius:2px; display:flex; align-items:center;
+  justify-content:center; font-size:12px; flex-shrink:0;
+}
+.feed-text { font-size:11.5px; line-height:1.5; }
+.feed-text strong { font-weight:600; }
+.feed-time { font-size:9px; color:var(--text-muted); font-family:var(--mono); margin-top:2px; }
+
+/* =========================================
+   ARRIVAL ALERTS
+   ========================================= */
+.arrival-item {
+  display:flex; align-items:center; gap:12px; padding:10px 12px;
+  border-bottom:1px solid var(--border); transition:background 0.1s;
+}
+.arrival-item:hover { background:var(--bg-hover); }
+.arrival-item:last-child { border-bottom:none; }
+.arrival-pn { font-family:var(--mono); font-size:11px; font-weight:500; min-width:100px; }
+.arrival-desc { font-size:11px; color:var(--text-secondary); flex:1; }
+.arrival-match { font-size:10px; font-weight:600; display:flex; align-items:center; gap:4px; }
+.arrival-btn {
+  padding:4px 10px; border:1px solid var(--green-border); background:var(--green-bg);
+  color:var(--green); font-size:9px; font-weight:700; border-radius:2px; cursor:pointer;
+  font-family:var(--sans); text-transform:uppercase; letter-spacing:0.5px;
+}
+.arrival-btn:hover { background:var(--green); color:#fff; }
+
+/* =========================================
+   REPARABLES
+   ========================================= */
+.rep-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); font-size:11px; }
+.rep-item:last-child { border-bottom:none; }
+.rep-days { font-family:var(--mono); font-weight:500; min-width:50px; text-align:right; }
+
+/* =========================================
+   AVAILABILITY CHART
+   ========================================= */
+.avail-chart { display:flex; align-items:flex-end; gap:2px; height:60px; padding:8px 0; }
+.avail-bar { flex:1; border-radius:1px 1px 0 0; min-width:3px; transition:height 0.2s; }
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media(max-width:1200px) { .kpi-grid { grid-template-columns:repeat(3,1fr); } }
+@media(max-width:900px) {
+  .kpi-grid { grid-template-columns:repeat(2,1fr); }
+  .grid-2, .grid-3, .grid-equal { grid-template-columns:1fr; }
+  .value-bar { flex-wrap:wrap; }
+}
+
+/* =========================================
+   ANIMATIONS
+   ========================================= */
+.page { display:none; animation: fadeUp 0.3s ease-out both; }
+.page.active { display:block; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.animate { animation: fadeUp 0.35s ease-out both; }
+.d1 { animation-delay:0.05s; } .d2 { animation-delay:0.1s; } .d3 { animation-delay:0.15s; }
+.d4 { animation-delay:0.2s; } .d5 { animation-delay:0.25s; } .d6 { animation-delay:0.3s; }
+
+/* =========================================
+   SECTION TITLES
+   ========================================= */
+.section-title {
+  font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+  color:var(--text-muted); margin-bottom:12px; display:flex; align-items:center; gap:8px;
+}
+.section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* =========================================
+   MODAL / WIZARD
+   ========================================= */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:500;
+  display:none; align-items:center; justify-content:center;
+  backdrop-filter:blur(2px);
+}
+.modal-overlay.open { display:flex; }
+.modal {
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
+  width:640px; max-height:90vh; overflow-y:auto; box-shadow:var(--shadow-lg);
+  animation: fadeUp 0.25s ease-out;
+}
+.modal-head {
+  padding:16px 20px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.modal-title { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+.modal-close {
+  width:28px; height:28px; border:1px solid var(--border); border-radius:var(--radius);
+  background:var(--bg); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:14px; color:var(--text-muted); transition:all 0.12s;
+}
+.modal-close:hover { border-color:var(--red); color:var(--red); }
+.modal-body { padding:20px; }
+.modal-footer {
+  padding:14px 20px; border-top:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.wizard-steps {
+  display:flex; gap:0; margin-bottom:20px; border-bottom:2px solid var(--border);
+}
+.wizard-step {
+  flex:1; text-align:center; padding:10px 8px; font-size:10px; font-weight:600;
+  text-transform:uppercase; letter-spacing:1px; color:var(--text-muted);
+  position:relative; cursor:default;
+}
+.wizard-step.active { color:var(--accent); }
+.wizard-step.active::after {
+  content:''; position:absolute; bottom:-2px; left:0; right:0; height:2px;
+  background:var(--accent);
+}
+.wizard-step.done { color:var(--green); }
+.wizard-step.done::after {
+  content:''; position:absolute; bottom:-2px; left:0; right:0; height:2px;
+  background:var(--green);
+}
+.wz-panel { display:none; }
+.wz-panel.active { display:block; animation: fadeUp 0.2s ease-out; }
+.wz-field { margin-bottom:14px; }
+.wz-label {
+  font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted);
+  font-weight:600; display:block; margin-bottom:4px;
+}
+.wz-input {
+  width:100%; padding:9px 12px; background:var(--bg-input); border:1px solid var(--border);
+  border-radius:var(--radius); font-size:12px; color:var(--text); font-family:var(--sans);
+  outline:none; transition:border-color 0.15s;
+}
+.wz-input:focus { border-color:var(--accent); }
+.wz-input.mono { font-family:var(--mono); }
+.wz-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.wz-row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+.btn-accent {
+  background:var(--accent); color:#fff; border:none; padding:9px 20px; border-radius:var(--radius);
+  font-size:12px; font-weight:600; cursor:pointer; font-family:var(--sans); transition:filter 0.12s;
+}
+.btn-accent:hover { filter:brightness(1.1); }
+.btn-ghost {
+  background:transparent; color:var(--text-secondary); border:1px solid var(--border);
+  padding:9px 20px; border-radius:var(--radius); font-size:12px; font-weight:500;
+  cursor:pointer; font-family:var(--sans); transition:all 0.12s;
+}
+.btn-ghost:hover { border-color:var(--text); color:var(--text); }
+.qr-result { text-align:center; padding:16px 0; }
+.qr-result canvas { border:1px solid var(--border); border-radius:var(--radius); }
+.qr-info { margin-top:12px; font-size:11px; color:var(--text-secondary); }
+.qr-token { font-family:var(--mono); font-size:10px; color:var(--text-muted); word-break:break-all; margin-top:6px; }
+.qr-actions { display:flex; gap:8px; margin-top:16px; justify-content:center; }
+.print-only { display:none; }
+@media print {
+  body * { display:none !important; }
+  .print-only { display:block !important; position:fixed; inset:0; background:#fff; z-index:9999; padding:40px; text-align:center; }
+  .print-only * { display:block !important; }
+  .print-only canvas { margin:20px auto !important; }
+}
+</style>
+</head>
+<body data-ativscore-license="INPI-730-MuriloRafaelVoltolini-CPF03776104961-Abril2026" data-author="Murilo Rafael Voltolini" data-copyright="2026">
+
+<!-- ============ SIDEBAR ============ -->
+<aside class="sidebar" id="sidebar">
+  <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebar()">◀</button>
+  <div class="sidebar-header">
+    <div class="logo-mark">FC</div>
+    <div>
+      <div class="logo-text">FLYTCORE</div>
+      <div class="logo-sub">Command Center</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-label">Visão Geral</div>
+    <div class="nav-item active" data-page="dashboard" onclick="navTo('dashboard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span class="nav-text">Dashboard da Frota</span>
+    </div>
+
+    <div class="sidebar-label">Manutenção</div>
+    <div class="nav-item" data-page="os" onclick="navTo('os',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span class="nav-text">Ordens de Serviço</span>
+      <span class="nav-badge">7</span>
+    </div>
+    <div class="nav-item" data-page="detalhe" onclick="navTo('detalhe',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span class="nav-text">Detalhe Aeronave</span>
+    </div>
+    <div class="nav-item" data-page="simulador" onclick="navTo('simulador',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span class="nav-text">Simulador Projeção</span>
+    </div>
+
+    <div class="sidebar-label">Logística</div>
+    <div class="nav-item" data-page="requisicoes" onclick="navTo('requisicoes',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <span class="nav-text">Requisições Campo</span>
+      <span class="nav-badge">3</span>
+    </div>
+    <div class="nav-item" data-page="reparaveis" onclick="navTo('reparaveis',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/></svg>
+      <span class="nav-text">Reparáveis em Trânsito</span>
+      <span class="nav-badge yellow">5</span>
+    </div>
+    <div class="nav-item" data-page="estoque" onclick="navTo('estoque',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+      <span class="nav-text">Estoque (Protheus)</span>
+    </div>
+    <div class="nav-item" data-page="pedidos" onclick="navTo('pedidos',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+      <span class="nav-text">Pedidos Compra</span>
+      <span class="nav-badge">48</span>
+    </div>
+
+    <div class="sidebar-label">Compliance</div>
+    <div class="nav-item" data-page="compliance" onclick="navTo('compliance',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span class="nav-text">Conformidade AD/SB</span>
+    </div>
+    <div class="nav-item" data-page="auditoria" onclick="navTo('auditoria',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M9 15l2 2 4-4"/></svg>
+      <span class="nav-text">Auditoria Rápida</span>
+    </div>
+    <div class="nav-item" data-page="log" onclick="navTo('log',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      <span class="nav-text">Log Auditoria</span>
+    </div>
+
+    <div class="sidebar-label">Sistema</div>
+    <div class="nav-item" data-page="usuarios" onclick="navTo('usuarios',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      <span class="nav-text">Usuários</span>
+    </div>
+    <div class="nav-item" data-page="importacao" onclick="navTo('importacao',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      <span class="nav-text">Importação Dados</span>
+    </div>
+    <div class="nav-item" data-page="config" onclick="navTo('config',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span class="nav-text">Configurações</span>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="avatar-sm">FC</div>
+    <div class="user-info">
+      <div class="user-name">FlytCore</div>
+      <div class="user-role">Command Center</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ============ MAIN ============ -->
+<div class="main" id="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-title">Dashboard da Frota</span>
+      <span class="topbar-divider"></span>
+      <span class="topbar-sub">Asset Lifecycle</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-time" id="clock"></span>
+      <div class="topbar-btn"><span class="topbar-dot green"></span> Protheus sync 2h atrás</div>
+      <div class="topbar-btn"><span class="topbar-dot red"></span> 3 alertas AOG</div>
+      <div class="topbar-btn" style="border-color:var(--accent);color:var(--accent);cursor:pointer;" onclick="navTo('os',document.querySelector('[data-page=os]'))">Nova OS</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    
+<!-- ===== PAGE: DASHBOARD ===== -->
+    <div class="page active" id="page-dashboard">
+
+    <!-- BANNERS -->
+    <div class="banner warning animate">
+      <span class="banner-icon">⚠</span>
+      <span class="banner-text">Dados de estoque Protheus atualizados há <strong>2 horas</strong>. Próxima importação automática em 4h.</span>
+      <span class="banner-action">Importar agora</span>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi animate d1">
+        <div class="kpi-label">Aeronaves Ativas</div>
+        <div class="kpi-value">97</div>
+        <div class="kpi-sub">de 100 cadastradas</div>
+      </div>
+      <div class="kpi animate d2">
+        <div class="kpi-label">Disponíveis</div>
+        <div class="kpi-value" style="color:var(--green);">78</div>
+        <div class="kpi-sub"><span class="kpi-tag up">80.4%</span> da frota</div>
+      </div>
+      <div class="kpi animate d3">
+        <div class="kpi-label">Em Manutenção</div>
+        <div class="kpi-value" style="color:var(--yellow);">14</div>
+        <div class="kpi-sub">5 aguardando peça</div>
+      </div>
+      <div class="kpi animate d4">
+        <div class="kpi-label">AOG</div>
+        <div class="kpi-value" style="color:var(--red);">5</div>
+        <div class="kpi-sub"><span class="kpi-tag down">R$ 127k/dia</span> perdidos</div>
+      </div>
+      <div class="kpi animate d5">
+        <div class="kpi-label">Horas Voadas (Mês)</div>
+        <div class="kpi-value" style="color:var(--accent);">4.218h</div>
+        <div class="kpi-sub"><span class="kpi-tag up">+8%</span> vs mês anterior</div>
+      </div>
+      <div class="kpi animate d6">
+        <div class="kpi-label">Vencendo (30 dias)</div>
+        <div class="kpi-value" style="color:var(--orange);">42</div>
+        <div class="kpi-sub">18 criticidade A em 12 aeronaves</div>
+      </div>
+    </div>
+
+    <!-- VALUE BAR -->
+    <div class="value-bar animate">
+      <div class="value-bar-main">
+        <div class="value-bar-amount">R$ 892.400.000</div>
+        <div class="value-bar-label">Valor Patrimonial Estimado da Frota</div>
+      </div>
+      <div class="value-bar-divider"></div>
+      <div class="value-bar-metric">
+        <div class="value-bar-metric-value" style="color:var(--accent);">87</div>
+        <div class="value-bar-metric-label">Score Médio</div>
+      </div>
+      <div class="value-bar-divider"></div>
+      <div class="value-bar-metric">
+        <div class="value-bar-metric-value" style="color:var(--red);">48</div>
+        <div class="value-bar-metric-label">Pedidos Atrasados</div>
+      </div>
+      <div class="value-bar-divider"></div>
+      <div class="value-bar-metric">
+        <div class="value-bar-metric-value">5</div>
+        <div class="value-bar-metric-label">Reparáveis Fora</div>
+      </div>
+      <div class="onboarding-bar">
+        <div class="onboarding-text">Onboarding</div>
+        <div class="onboarding-track"><div class="onboarding-fill" style="width:62%;"></div></div>
+        <div class="onboarding-text">62/100</div>
+      </div>
+    </div>
+
+    <!-- FLEET TABLE + SCORE -->
+    <div class="section-title animate">Status da Frota</div>
+    <div class="grid-2 animate">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Aeronaves — Ordenado por Urgência</span>
+          <div style="display:flex;gap:6px;">
+            <span class="card-badge" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);">78 OK</span>
+            <span class="card-badge" style="background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-border);">14 MNT</span>
+            <span class="card-badge" style="background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);">5 AOG</span>
+          </div>
+        </div>
+        <div class="card-body flush" style="max-height:420px;overflow-y:auto;">
+          <table class="tbl">
+            <thead><tr><th>Prefixo</th><th>Modelo</th><th>Base</th><th>Status</th><th>h/Mês</th><th>Próx. Venc.</th><th>Crit.</th><th>Score</th></tr></thead>
+            <tbody>
+              <tr class="clickable"><td class="mono" style="color:var(--red);font-weight:600;">PR-HLS</td><td>EC130 T2</td><td>Macaé</td><td><span class="status"><span class="status-dot red"></span>AOG</span></td><td class="mono">—</td><td class="mono" style="color:var(--red);">VENCIDO</td><td><span class="crit a">A</span></td><td><div class="health"><div class="health-track"><div class="health-fill" style="width:22%;background:var(--red);"></div></div><span class="health-num" style="color:var(--red);">22</span></div></td></tr>
+              <tr class="clickable"><td class="mono" style="color:var(--red);font-weight:600;">PR-AOG</td><td>AW139</td><td>Macaé</td><td><span class="status"><span class="status-dot red"></span>AOG</span></td><td class="mono">—</td><td class="mono" style="color:var(--red);">VENCIDO</td><td><span class="crit a">A</span></td><td><div class="health"><div class="health-track"><div class="health-fill" style="width:31%;background:var(--red);"></div></div><span class="health-num" style="color:var(--red);">31</span></div></td></tr>
+              <tr class="clickable"><td class="mono" style="color:var(--yellow);">PR-YMD</td><td>AW139</td><td>Curitiba</td><td><span class="status"><span class="status-dot yellow"></span>Manutenção</span></td><td class="mono">—</td><td class="mono" style="color:var(--yellow);">12h</td><td><span class="crit a">A</span></td><td><div class="health"><div class="health-track"><div class="health-fill" style="width:58%;background:var(--yellow);"></div></div><span class="health-num">58</span></div></td></tr>
+              <tr class="clickable"><td class="mono" style="color:var(--yellow);">PR-BKL</td><td>Bell 407GXi</td><td>Itajaí</td><td><span class="status"><span class="status-dot yellow"></span>Manutenção</span></td><td class="mono">—</td><td class="mono" style="color:var(--yellow);">32h</td><td><span class="crit b">B</span></td><td><div class="health"><div class="health-track"><div class="health-fill" style="width:65%;background:var(--yellow);"></div></div><span class="health-num">65</span></div></td></tr>
+              <tr class="clickable"><td class="mono">PR-HTX</td><td>EC135 T3</td><td>Curitiba</td><td><span class="status"><span class="status-dot green"></span>Disponível</span></td><td class="mono">87h</td><td class="mono" style="color:var(--green);">124h</td><td><span class="crit a">A</span></td><td><div class="health"><div class="health-track"><div class="health-fill" style="width:92%;background:var(--green);"></div></div><span class="health-num" style="color:var(--green);">92</span></div></td></tr>
+              <tr class="clickable"><td class="mono">PR-FNX</td><td>H145</td><td>São Paulo</td><td><span class="status"><span class="status-dot green"></span>Disponível</span></td><td class="mono">45h</td><td class="mono" style="color:var(--green);">210h</td><td><span class="crit b">B</span></td><td><div class="health"><div class="health-track"><div class="health-fill" style="width:95%;background:var(--green);"></div></div><span class="health-num" style="color:var(--green);">95</span></div></td></tr>
+              <tr class="clickable"><td class="mono">PR-KRT</td><td>EC135 T3</td><td>Curitiba</td><td><span class="status"><span class="status-dot green"></span>Disponível</span></td><td class="mono">102h</td><td class="mono" style="color:var(--green);">340h</td><td><span class="crit c">C</span></td><td><div class="health"><div class="health-track"><div class="health-fill" style="width:88%;background:var(--green);"></div></div><span class="health-num">88</span></div></td></tr>
+              <tr class="clickable"><td class="mono">PR-MVD</td><td>Bell 429</td><td>Rio de Janeiro</td><td><span class="status"><span class="status-dot green"></span>Disponível</span></td><td class="mono">68h</td><td class="mono" style="color:var(--green);">512h</td><td><span class="crit c">C</span></td><td><div class="health"><div class="health-track"><div class="health-fill" style="width:96%;background:var(--green);"></div></div><span class="health-num" style="color:var(--green);">96</span></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SCORE + AVAILABILITY -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="card">
+          <div class="card-head"><span class="card-title">Score de Saúde da Frota</span></div>
+          <div class="card-body">
+            <div class="score-block">
+              <div class="score-ring"><span class="score-val">87</span></div>
+            </div>
+            <div class="score-metrics">
+              <div class="score-row"><span class="score-row-label">Completude documental</span><span class="score-row-value" style="color:var(--green);">94%</span></div>
+              <div class="score-row"><span class="score-row-label">Rastreabilidade componentes</span><span class="score-row-value" style="color:var(--accent);">88%</span></div>
+              <div class="score-row"><span class="score-row-label">Conformidade AD/SB</span><span class="score-row-value" style="color:var(--green);">96%</span></div>
+              <div class="score-row"><span class="score-row-label">Tempo resol. panes</span><span class="score-row-value" style="color:var(--yellow);">71%</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Disponibilidade — Últimos 30 dias</span><span class="card-badge" style="background:var(--bg);color:var(--text-muted);border:1px solid var(--border);">Média 81%</span></div>
+          <div class="card-body">
+            <div class="avail-chart" id="availChart"></div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-muted);font-family:var(--mono);">
+              <span>12/mar</span><span>22/mar</span><span>01/abr</span><span>11/abr</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BACKLOG + ARRIVALS + REPARABLES -->
+    <div class="section-title animate">Logística e Alertas Críticos</div>
+    <div class="grid-3 animate">
+
+      <!-- BACKLOG -->
+      <div class="card" style="grid-column:span 2;">
+        <div class="backlog-header">
+          <span class="backlog-header-icon">🔴</span>
+          <div>
+            <div class="backlog-header-text">48 pedidos de compra em atraso — Impacto: R$ 127.000/dia</div>
+            <div class="backlog-header-sub">+6 novos pedidos/semana vs. apenas 3 entregas/semana</div>
+          </div>
+        </div>
+        <div class="backlog-note">BASE: Pedidos de compra a partir de JAN/2026 (migração almoxarifado Cavok → Protheus)</div>
+        <div class="card-body flush" style="max-height:260px;overflow-y:auto;">
+          <table class="tbl">
+            <thead><tr><th>P/N</th><th>Peça</th><th>Atraso</th><th>Fornecedor</th><th>Aeronave</th><th>Impacto</th><th>Crit.</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">6871103-A</td><td>Starter Generator</td><td class="mono" style="color:var(--red);font-weight:600;">94 dias</td><td>Heliparts</td><td class="mono" style="color:var(--red);">PR-HLS (AOG)</td><td class="mono" style="color:var(--red);">R$ 25k/dia</td><td><span class="crit a">A</span></td></tr>
+              <tr><td class="mono">3G6220V03</td><td>Turbina Arrius 2B2+</td><td class="mono" style="color:var(--red);font-weight:600;">82 dias</td><td>Safran HE</td><td class="mono" style="color:var(--red);">PR-AOG (AOG)</td><td class="mono" style="color:var(--red);">R$ 38k/dia</td><td><span class="crit a">A</span></td></tr>
+              <tr><td class="mono">0530035-3</td><td>Servo Atuador Coletivo</td><td class="mono" style="color:var(--orange);">67 dias</td><td>Collins Aero</td><td class="mono" style="color:var(--yellow);">PR-YMD (MNT)</td><td class="mono">R$ 8k/dia</td><td><span class="crit a">A</span></td></tr>
+              <tr><td class="mono">EC135-WS</td><td>Para-brisa Direito</td><td class="mono" style="color:var(--orange);">53 dias</td><td>Airbus Spares</td><td class="mono" style="color:var(--red);">PR-AOG (AOG)</td><td class="mono" style="color:var(--red);">R$ 38k/dia</td><td><span class="crit b">B</span></td></tr>
+              <tr><td class="mono">AW139-BAT</td><td>Bateria Principal 24V</td><td class="mono" style="color:var(--yellow);">31 dias</td><td>Saft Groupe</td><td class="mono">PR-BKL (MNT)</td><td class="mono">R$ 5k/dia</td><td><span class="crit b">B</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-body" style="padding:12px 16px;border-top:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div style="flex:1;">
+              <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:600;margin-bottom:6px;">Tendência: Entradas vs. Entregas (últimas 8 semanas)</div>
+              <div class="chart-bars">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div class="chart-bar in" style="height:40px;"></div><div class="chart-bar out" style="height:25px;"></div></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div class="chart-bar in" style="height:50px;"></div><div class="chart-bar out" style="height:20px;"></div></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div class="chart-bar in" style="height:35px;"></div><div class="chart-bar out" style="height:30px;"></div></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div class="chart-bar in" style="height:55px;"></div><div class="chart-bar out" style="height:15px;"></div></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div class="chart-bar in" style="height:45px;"></div><div class="chart-bar out" style="height:22px;"></div></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div class="chart-bar in" style="height:60px;"></div><div class="chart-bar out" style="height:18px;"></div></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div class="chart-bar in" style="height:48px;"></div><div class="chart-bar out" style="height:28px;"></div></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div class="chart-bar in" style="height:52px;"></div><div class="chart-bar out" style="height:20px;"></div></div>
+              </div>
+              <div class="chart-legend">
+                <span><span class="chart-legend-dot" style="background:var(--red);"></span> Novos pedidos</span>
+                <span><span class="chart-legend-dot" style="background:var(--green);"></span> Entregas recebidas</span>
+              </div>
+            </div>
+            <div style="text-align:center;padding:8px 16px;border-left:1px solid var(--border);">
+              <div style="font-family:var(--mono);font-size:22px;font-weight:500;color:var(--red);">+3/sem</div>
+              <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Crescimento líquido</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPARABLES -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Reparáveis em Trânsito</span>
+          <span class="card-badge" style="background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-border);">5 fora</span>
+        </div>
+        <div class="card-body">
+          <div class="rep-item">
+            <span class="crit a">A</span>
+            <div style="flex:1;">
+              <div style="font-size:11px;font-weight:600;">MGB — AW139</div>
+              <div style="font-size:9px;color:var(--text-muted);font-family:var(--mono);">S/N MG-4521 · Heliparts SP</div>
+            </div>
+            <div class="rep-days" style="color:var(--red);">87d</div>
+          </div>
+          <div class="rep-item">
+            <span class="crit a">A</span>
+            <div style="flex:1;">
+              <div style="font-size:11px;font-weight:600;">Turbina Arrius — EC135</div>
+              <div style="font-size:9px;color:var(--text-muted);font-family:var(--mono);">S/N T-8834 · Safran FR</div>
+            </div>
+            <div class="rep-days" style="color:var(--orange);">62d</div>
+          </div>
+          <div class="rep-item">
+            <span class="crit b">B</span>
+            <div style="flex:1;">
+              <div style="font-size:11px;font-weight:600;">FADEC Unit — H145</div>
+              <div style="font-size:9px;color:var(--text-muted);font-family:var(--mono);">S/N FC-112 · Collins US</div>
+            </div>
+            <div class="rep-days" style="color:var(--yellow);">45d</div>
+          </div>
+          <div class="rep-item">
+            <span class="crit b">B</span>
+            <div style="flex:1;">
+              <div style="font-size:11px;font-weight:600;">Servo Cauda — Bell 429</div>
+              <div style="font-size:9px;color:var(--text-muted);font-family:var(--mono);">S/N SV-0098 · Bell CA</div>
+            </div>
+            <div class="rep-days">28d</div>
+          </div>
+          <div class="rep-item">
+            <span class="crit c">C</span>
+            <div style="flex:1;">
+              <div style="font-size:11px;font-weight:600;">Starter Gen. — EC130</div>
+              <div style="font-size:9px;color:var(--text-muted);font-family:var(--mono);">S/N SG-3301 · Local CWB</div>
+            </div>
+            <div class="rep-days">12d</div>
+          </div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text-muted);">
+            <strong style="color:var(--red);">2 itens Crit. A</strong> fora há mais de 60 dias sem previsão de retorno
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARRIVALS + ACTIVITY -->
+    <div class="grid-equal animate">
+      <!-- ARRIVALS -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Alertas de Chegada — Match Automático</span>
+          <span class="card-badge" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);">3 novas</span>
+        </div>
+        <div class="card-body flush">
+          <div class="arrival-item">
+            <span class="arrival-pn">AW139-OFI</span>
+            <span class="arrival-desc">Kit filtros inspeção 100h</span>
+            <span class="arrival-match" style="color:var(--red);">→ PR-YMD · OS #0849 · Urgente</span>
+            <button class="arrival-btn">Confirmar</button>
+          </div>
+          <div class="arrival-item">
+            <span class="arrival-pn">EC135-FO-12</span>
+            <span class="arrival-desc">Filtro óleo motor</span>
+            <span class="arrival-match" style="color:var(--green);">→ PR-HTX · Estoque geral</span>
+            <button class="arrival-btn">Confirmar</button>
+          </div>
+          <div class="arrival-item">
+            <span class="arrival-pn">BELL-HF-03</span>
+            <span class="arrival-desc">Fluido hidráulico MIL-PRF-83282</span>
+            <span class="arrival-match" style="color:var(--text-muted);">→ Sem match · Estoque geral</span>
+            <button class="arrival-btn">OK</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:8px 16px;border-top:1px solid var(--border);">
+          <div style="font-size:9px;color:var(--text-muted);">Match baseado na comparação do CSV de estoque Protheus de hoje vs. ontem. Prioridade: AOG → Urgente → Rotina → Data mais antiga.</div>
+        </div>
+      </div>
+
+      <!-- ACTIVITY -->
+      <div class="card">
+        <div class="card-head"><span class="card-title">Atividade Recente</span></div>
+        <div class="card-body">
+          <div class="feed-item">
+            <div class="feed-icon" style="background:var(--red-bg);color:var(--red);">!</div>
+            <div>
+              <div class="feed-text"><strong>Pane reportada</strong> — PR-HLS · Starter Generator falhou em campo (Macaé)</div>
+              <div class="feed-time">há 45 min · Carlos Mendes · GPS: -22.37, -41.78</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-icon" style="background:var(--green-bg);color:var(--green);">✓</div>
+            <div>
+              <div class="feed-text"><strong>OS #0847 aprovada</strong> — PR-HTX · Troca de filtros concluída com 5 fotos</div>
+              <div class="feed-time">há 2h · Inspetor Chefe</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-icon" style="background:var(--accent-light);color:var(--accent);">📷</div>
+            <div>
+              <div class="feed-text"><strong>18 fotos sincronizadas</strong> — 3 mecânicos em campo (Macaé, Itajaí, CWB)</div>
+              <div class="feed-time">há 3h · Sync automático</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-icon" style="background:var(--yellow-bg);color:var(--yellow);">⚠</div>
+            <div>
+              <div class="feed-text"><strong>Requisição AOG</strong> — PR-AOG aguardando Turbina há 82 dias</div>
+              <div class="feed-time">há 5h · Alerta automático</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-icon" style="background:var(--bg);color:var(--text-muted);">↻</div>
+            <div>
+              <div class="feed-text"><strong>Importação Protheus</strong> — 10.247 itens · 3 novos P/Ns mapeados</div>
+              <div class="feed-time">hoje 06:00 · Automático</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAREFAS ADMINISTRATIVO + CUSTO/HORA -->
+    <div class="section-title animate">Operacional</div>
+    <div class="grid-equal animate">
+      <!-- TAREFAS ADMIN -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Tarefas para Administrativo (ERPs)</span>
+          <span class="card-badge" style="background:var(--orange-bg);color:var(--orange);border:1px solid #F0C8A0;">4 pendentes</span>
+        </div>
+        <div class="card-body flush">
+          <table class="tbl">
+            <thead><tr><th>Ação</th><th>Referência</th><th>Gerada</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td style="font-size:11px;">Baixar estoque Protheus</td><td class="mono" style="font-size:11px;">P/N AW139-OFI · OS #0849</td><td class="mono" style="font-size:10px;color:var(--text-muted);">há 2h</td><td><span style="color:var(--orange);font-size:10px;font-weight:600;">Pendente</span></td></tr>
+              <tr><td style="font-size:11px;">Atualizar CTM Cavok</td><td class="mono" style="font-size:11px;">Insp. 100h · PR-HTX</td><td class="mono" style="font-size:10px;color:var(--text-muted);">há 3h</td><td><span style="color:var(--orange);font-size:10px;font-weight:600;">Pendente</span></td></tr>
+              <tr><td style="font-size:11px;">Atualizar CTM Cavok</td><td class="mono" style="font-size:11px;">Troca filtros · PR-KRT</td><td class="mono" style="font-size:10px;color:var(--text-muted);">ontem</td><td><span style="color:var(--green);font-size:10px;font-weight:600;">✓ Feito</span></td></tr>
+              <tr><td style="font-size:11px;">Baixar estoque Protheus</td><td class="mono" style="font-size:11px;">P/N EC135-FO-12 · OS #0844</td><td class="mono" style="font-size:10px;color:var(--text-muted);">ontem</td><td><span style="color:var(--green);font-size:10px;font-weight:600;">✓ Feito</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:8px 16px;border-top:1px solid var(--border);font-size:9px;color:var(--text-muted);">
+          O FlytCore nunca escreve nos ERPs. Esta lista orienta o administrativo sobre o que atualizar manualmente no Protheus e Cavok.
+        </div>
+      </div>
+
+      <!-- CUSTO/HORA -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Custo Médio por Hora de Voo — Top 5 Modelos</span>
+        </div>
+        <div class="card-body">
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:11px;font-weight:600;">AW139</span>
+              <span class="mono" style="font-size:11px;">R$ 4.820/h</span>
+            </div>
+            <div style="height:6px;background:var(--bg);border-radius:1px;border:1px solid var(--border);overflow:hidden;">
+              <div style="width:100%;height:100%;background:var(--red);border-radius:1px;"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:11px;font-weight:600;">H145</span>
+              <span class="mono" style="font-size:11px;">R$ 3.640/h</span>
+            </div>
+            <div style="height:6px;background:var(--bg);border-radius:1px;border:1px solid var(--border);overflow:hidden;">
+              <div style="width:75%;height:100%;background:var(--orange);border-radius:1px;"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:11px;font-weight:600;">Bell 429</span>
+              <span class="mono" style="font-size:11px;">R$ 2.980/h</span>
+            </div>
+            <div style="height:6px;background:var(--bg);border-radius:1px;border:1px solid var(--border);overflow:hidden;">
+              <div style="width:62%;height:100%;background:var(--yellow);border-radius:1px;"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:11px;font-weight:600;">EC135 T3</span>
+              <span class="mono" style="font-size:11px;">R$ 2.210/h</span>
+            </div>
+            <div style="height:6px;background:var(--bg);border-radius:1px;border:1px solid var(--border);overflow:hidden;">
+              <div style="width:46%;height:100%;background:var(--accent);border-radius:1px;"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:11px;font-weight:600;">EC130 T2</span>
+              <span class="mono" style="font-size:11px;">R$ 1.850/h</span>
+            </div>
+            <div style="height:6px;background:var(--bg);border-radius:1px;border:1px solid var(--border);overflow:hidden;">
+              <div style="width:38%;height:100%;background:var(--green);border-radius:1px;"></div>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);">
+            <span>Inclui depreciação de componentes + consumíveis</span>
+            <span class="kpi-tag up">↓ 3% vs trimestre anterior</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:16px 0 4px;margin-top:20px;border-top:1px solid var(--border);opacity:0.35;"><span style="font-size:8px;color:var(--text-muted);letter-spacing:0.5px;font-family:var(--mono);">© 2026 Murilo Rafael Voltolini - AtivsCore — Asset Lifecycle Intelligence Engine</span></div>
+</div><!-- /page-dashboard -->
+
+
+<div class="page" id="page-os">
+  <div class="section-title">Ordens de Serviço</div>
+  <div style="padding:6px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);font-size:9px;color:var(--text-muted);margin-bottom:12px;font-family:var(--mono);">Fonte: Cavok → Importação automática · O FlytCore não cria OS — ele lê do Cavok e adiciona fotos, GPS e rastreabilidade</div>
+  <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;" class="filter-group"><button class="filter-btn active">Todas (12)</button><button class="filter-btn">Abertas (3)</button><button class="filter-btn">Em Execução (4)</button><button class="filter-btn">Aguard. Peça (2)</button><button class="filter-btn">Concluídas (2)</button><button class="filter-btn">Aprovadas (1)</button></div>
+  <div class="card full-width"><div class="card-body flush" style="max-height:600px;overflow-y:auto;"><table class="tbl"><thead><tr><th>OS</th><th>Aeronave</th><th>Tipo</th><th>Descrição</th><th>Prioridade</th><th>Mecânico</th><th>Progresso</th><th>Status</th></tr></thead><tbody>
+    <tr class="clickable"><td class="mono" style="color:var(--accent);">#0851</td><td class="mono" style="color:var(--red);">PR-HLS</td><td>Corretiva</td><td>Substituição Starter Generator</td><td><span style="background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:2px;font-size:10px;font-weight:700;">AOG</span></td><td>Carlos Mendes</td><td><div class="health"><div class="health-track" style="width:80px;"><div class="health-fill" style="width:33%;background:var(--red);"></div></div><span class="health-num">1/3</span></div></td><td><span class="status"><span class="status-dot red"></span>Aguard. Peça</span></td></tr>
+    <tr class="clickable"><td class="mono" style="color:var(--accent);">#0849</td><td class="mono" style="color:var(--yellow);">PR-YMD</td><td>Preventiva</td><td>Inspeção de 100h</td><td><span style="background:var(--yellow-bg);color:var(--yellow);padding:2px 8px;border-radius:2px;font-size:10px;font-weight:700;">URGENTE</span></td><td>João Costa</td><td><div class="health"><div class="health-track" style="width:80px;"><div class="health-fill" style="width:60%;background:var(--accent);"></div></div><span class="health-num">6/10</span></div></td><td><span class="status"><span class="status-dot blue"></span>Em Execução</span></td></tr>
+    <tr class="clickable"><td class="mono" style="color:var(--accent);">#0848</td><td class="mono">PR-FNX</td><td>Preventiva</td><td>Troca de filtros motor e hidráulico</td><td><span style="background:var(--bg);color:var(--text-muted);padding:2px 8px;border-radius:2px;font-size:10px;font-weight:700;">ROTINA</span></td><td>Ana Soares</td><td><div class="health"><div class="health-track" style="width:80px;"><div class="health-fill" style="width:80%;background:var(--accent);"></div></div><span class="health-num">4/5</span></div></td><td><span class="status"><span class="status-dot blue"></span>Em Execução</span></td></tr>
+    <tr class="clickable"><td class="mono" style="color:var(--accent);">#0847</td><td class="mono">PR-HTX</td><td>Preventiva</td><td>Troca de filtros óleo/combustível</td><td><span style="background:var(--bg);color:var(--text-muted);padding:2px 8px;border-radius:2px;font-size:10px;font-weight:700;">ROTINA</span></td><td>João Costa</td><td><div class="health"><div class="health-track" style="width:80px;"><div class="health-fill" style="width:100%;background:var(--green);"></div></div><span class="health-num"><span style=color:var(--green)>5/5</span></span></div></td><td><span class="status"><span class="status-dot green"></span>Aprovada</span></td></tr>
+    <tr class="clickable"><td class="mono" style="color:var(--accent);">#0846</td><td class="mono" style="color:var(--red);">PR-AOG</td><td>Corretiva</td><td>Overhaul turbina Arrius 2B2+</td><td><span style="background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:2px;font-size:10px;font-weight:700;">AOG</span></td><td>—</td><td><div class="health"><div class="health-track" style="width:80px;"><div class="health-fill" style="width:0%;background:var(--red);"></div></div><span class="health-num">0/8</span></div></td><td><span class="status"><span class="status-dot red"></span>Aguard. Peça</span></td></tr>
+    <tr class="clickable"><td class="mono" style="color:var(--accent);">#0845</td><td class="mono">PR-KRT</td><td>Preventiva</td><td>Inspeção de 300h</td><td><span style="background:var(--bg);color:var(--text-muted);padding:2px 8px;border-radius:2px;font-size:10px;font-weight:700;">ROTINA</span></td><td>Pedro Vieira</td><td><div class="health"><div class="health-track" style="width:80px;"><div class="health-fill" style="width:25%;background:var(--accent);"></div></div><span class="health-num">3/12</span></div></td><td><span class="status"><span class="status-dot blue"></span>Em Execução</span></td></tr>
+  </tbody></table></div></div>
+  <div style="margin-top:12px;display:flex;gap:12px;"><button class="topbar-btn">Exportar Relatório</button><button class="topbar-btn" onclick="navTo('importacao',document.querySelector('[data-page=importacao]'))">Importar OS do Cavok</button></div>
+</div>
+
+<div class="page" id="page-detalhe">
+  <div style="display:flex;align-items:center;gap:16px;padding:16px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;"><div><div style="font-family:var(--mono);font-size:24px;font-weight:700;letter-spacing:2px;">PR-HTX</div><div style="font-size:12px;color:var(--text-secondary);">Airbus EC135 T3 · S/N 2104</div><div style="font-size:11px;color:var(--text-muted);font-family:var(--mono);">4.872,3h totais · 2.341 ciclos · Base: Curitiba</div></div><div style="margin-left:auto;text-align:right;"><div style="font-family:var(--mono);font-size:32px;font-weight:500;color:var(--green);">92</div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Score Saúde</div></div></div>
+  <div style="padding:10px 16px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);margin-bottom:12px;font-size:13px;font-weight:600;color:var(--green);">🟢 12 itens dentro do prazo · Próximo vencimento: Starter Generator em 124h</div>
+  <div style="padding:8px 12px;background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);margin-bottom:16px;font-size:10px;color:var(--red);font-weight:500;">⚠ ESTE STATUS NÃO É CERTIFICAÇÃO DE AERONAVEGABILIDADE. A liberação é de responsabilidade exclusiva do profissional habilitado (RBAC 43/145).</div>
+  <div class="section-title">Componentes Rastreáveis</div>
+  <div class="card full-width"><div class="card-body flush"><table class="tbl"><thead><tr><th>P/N</th><th>S/N</th><th>Componente</th><th>Categ.</th><th>Crit.</th><th>TBO</th><th>TSO</th><th>Vida Restante</th><th>Status</th></tr></thead><tbody>
+    <tr><td class="mono">6871103-A</td><td class="mono">SG-98765</td><td>Starter Generator</td><td>Rotável</td><td><span class="crit a">A</span></td><td class="mono">3.000h</td><td class="mono">2.876h</td><td class="mono" style="color:var(--yellow);">124h (4%)</td><td><span class="status"><span class="status-dot yellow"></span>Atenção</span></td></tr>
+    <tr><td class="mono">3G6220V03</td><td class="mono">T-4412</td><td>Turbina Arrius 2B2+</td><td>LLP</td><td><span class="crit a">A</span></td><td class="mono">3.500h</td><td class="mono">2.260h</td><td class="mono" style="color:var(--green);">1.240h (35%)</td><td><span class="status"><span class="status-dot green"></span>OK</span></td></tr>
+    <tr><td class="mono">355A11-0054</td><td class="mono">P-7891</td><td>Pás Rotor Principal</td><td>LLP</td><td><span class="crit a">A</span></td><td class="mono">10.000h</td><td class="mono">6.900h</td><td class="mono" style="color:var(--green);">3.100h (31%)</td><td><span class="status"><span class="status-dot green"></span>OK</span></td></tr>
+    <tr><td class="mono">EC135-MGB</td><td class="mono">MG-1102</td><td>Main Gearbox</td><td>LLP</td><td><span class="crit a">A</span></td><td class="mono">5.000h</td><td class="mono">560h</td><td class="mono" style="color:var(--green);">4.440h (89%)</td><td><span class="status"><span class="status-dot green"></span>OK</span></td></tr>
+    <tr><td class="mono">201-987-B</td><td class="mono">B-0534</td><td>Bateria Principal 24V</td><td>Rotável</td><td><span class="crit b">B</span></td><td class="mono">12 meses</td><td class="mono">10 meses</td><td class="mono" style="color:var(--yellow);">2 meses</td><td><span class="status"><span class="status-dot yellow"></span>Calend.</span></td></tr>
+  </tbody></table></div></div>
+  <div class="section-title" style="margin-top:20px;">Histórico de OS</div>
+  <div class="card full-width"><div class="card-body flush"><table class="tbl"><thead><tr><th>OS</th><th>Tipo</th><th>Descrição</th><th>Mecânico</th><th>Data</th><th>Fotos</th><th>Status</th></tr></thead><tbody>
+    <tr><td class="mono">#0847</td><td>Preventiva</td><td>Troca de filtros</td><td>João Costa</td><td class="mono">09/04/2026</td><td class="mono">5</td><td style="color:var(--green);font-weight:600;">✓ Aprovada</td></tr>
+    <tr><td class="mono">#0831</td><td>Corretiva</td><td>Reparo vazamento hidráulico</td><td>Carlos Mendes</td><td class="mono">22/03/2026</td><td class="mono">8</td><td style="color:var(--green);font-weight:600;">✓ Aprovada</td></tr>
+    <tr><td class="mono">#0815</td><td>Preventiva</td><td>Inspeção 600h</td><td>João Costa</td><td class="mono">01/03/2026</td><td class="mono">22</td><td style="color:var(--green);font-weight:600;">✓ Aprovada</td></tr>
+  </tbody></table></div></div>
+</div>
+
+<div class="page" id="page-simulador">
+  <div class="section-title">Simulador de Projeção Financeira</div>
+  <div style="padding:8px 14px;background:var(--accent-light);border:1px solid #B8D4FF;border-radius:var(--radius);font-size:11px;color:var(--accent);margin-bottom:16px;font-weight:500;">Este simulador necessita de pelo menos 90 dias de dados acumulados (horas de voo + custos de manutenção) para projeções financeiras confiáveis. Antes disso, projeta apenas vencimentos por horas sem estimativa de custo precisa.</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+    <!-- COLUNA 1: Parâmetros Operacionais -->
+    <div class="card"><div class="card-head"><span class="card-title">Parâmetros Operacionais</span></div><div class="card-body">
+      <div style="margin-bottom:12px;"><label class="wz-label">Aeronave</label><select class="wz-input" style="font-family:var(--mono);" id="sim-aircraft"><option>PR-HTX — EC135 T3</option><option>PR-YMD — AW139</option><option>PR-FNX — H145</option><option>PR-KRT — EC135 T3</option><option>PR-MVD — Bell 429</option><option>FROTA INTEIRA (97 aeronaves)</option></select></div>
+      <div style="margin-bottom:12px;"><label class="wz-label">Projeção de Uso (horas/mês)</label><input class="wz-input mono" type="number" value="87" id="sim-hours"></div>
+      <div style="margin-bottom:12px;"><label class="wz-label">Período da Simulação</label><select class="wz-input" id="sim-period"><option value="6">6 meses</option><option value="12" selected>12 meses</option><option value="24">24 meses</option><option value="36">36 meses</option></select></div>
+      <div style="margin-bottom:12px;"><label class="wz-label">Cenário de Operação</label><select class="wz-input" id="sim-scenario"><option>Normal — Táxi Aéreo / Executivo</option><option>Severo — Offshore / Plataforma</option><option>Leve — Escola / Treinamento</option><option>Customizado</option></select></div>
+      <div style="font-size:9px;color:var(--text-muted);margin-top:8px;">O cenário "Severo" aplica fator 1.3x sobre o desgaste padrão. "Leve" aplica 0.8x.</div>
+    </div></div>
+
+    <!-- COLUNA 2: Parâmetros Financeiros -->
+    <div class="card"><div class="card-head"><span class="card-title">Parâmetros Financeiros</span></div><div class="card-body">
+      <div style="margin-bottom:12px;"><label class="wz-label">Taxa de Câmbio (USD → BRL)</label><div style="display:flex;gap:6px;align-items:center;"><span style="font-size:12px;color:var(--text-muted);">US$ 1 =</span><input class="wz-input mono" type="number" value="5.45" step="0.01" style="width:100px;" id="sim-fx"><span style="font-size:12px;color:var(--text-muted);">BRL</span></div><div style="font-size:9px;color:var(--text-muted);margin-top:4px;">Componentes aeronáuticos são precificados em USD. Este valor converte para BRL na projeção.</div></div>
+      <div style="margin-bottom:12px;"><label class="wz-label">Custo de Mão de Obra (MO) por hora de mecânico</label><div style="display:flex;gap:6px;align-items:center;"><span style="font-size:12px;color:var(--text-muted);">R$</span><input class="wz-input mono" type="number" value="120" style="width:100px;" id="sim-mo"><span style="font-size:12px;color:var(--text-muted);">/hora</span></div><div style="font-size:9px;color:var(--text-muted);margin-top:4px;">Inclui salário + encargos. Multiplicado pelas horas estimadas de cada evento.</div></div>
+      <div style="margin-bottom:12px;"><label class="wz-label">Fator de Contingência (%)</label><div style="display:flex;gap:6px;align-items:center;"><input class="wz-input mono" type="number" value="15" min="0" max="50" style="width:80px;" id="sim-contingency"><span style="font-size:12px;color:var(--text-muted);">% sobre o custo preventivo</span></div><div style="font-size:9px;color:var(--text-muted);margin-top:4px;">Cobre manutenções corretivas não planejadas. Histórico do setor: 12-18%.</div></div>
+      <div><label class="wz-label">Custo de AOG (receita perdida/dia)</label><div style="display:flex;gap:6px;align-items:center;"><span style="font-size:12px;color:var(--text-muted);">R$</span><input class="wz-input mono" type="number" value="25000" style="width:120px;" id="sim-aog"><span style="font-size:12px;color:var(--text-muted);">/dia</span></div><div style="font-size:9px;color:var(--text-muted);margin-top:4px;">Receita média perdida quando a aeronave está AOG. Usado para calcular custo de oportunidade.</div></div>
+    </div></div>
+
+    <!-- COLUNA 3: Horas de MO por Evento -->
+    <div class="card"><div class="card-head"><span class="card-title">Horas de MO por Tipo de Evento</span></div><div class="card-body">
+      <div style="font-size:9px;color:var(--text-muted);margin-bottom:12px;">Horas estimadas de trabalho de mecânico por tipo de manutenção. Configurável pelo engenheiro.</div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;align-items:center;"><span>Inspeção 100h</span><div style="display:flex;align-items:center;gap:4px;"><input class="wz-input mono" type="number" value="8" style="width:60px;padding:4px 8px;font-size:11px;text-align:center;"><span style="font-size:10px;color:var(--text-muted);">h</span></div></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;align-items:center;"><span>Inspeção 600h</span><div style="display:flex;align-items:center;gap:4px;"><input class="wz-input mono" type="number" value="40" style="width:60px;padding:4px 8px;font-size:11px;text-align:center;"><span style="font-size:10px;color:var(--text-muted);">h</span></div></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;align-items:center;"><span>Troca Starter Generator</span><div style="display:flex;align-items:center;gap:4px;"><input class="wz-input mono" type="number" value="12" style="width:60px;padding:4px 8px;font-size:11px;text-align:center;"><span style="font-size:10px;color:var(--text-muted);">h</span></div></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;align-items:center;"><span>Troca Servo Atuador</span><div style="display:flex;align-items:center;gap:4px;"><input class="wz-input mono" type="number" value="16" style="width:60px;padding:4px 8px;font-size:11px;text-align:center;"><span style="font-size:10px;color:var(--text-muted);">h</span></div></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:12px;align-items:center;"><span>Overhaul Turbina (prep+reinstal)</span><div style="display:flex;align-items:center;gap:4px;"><input class="wz-input mono" type="number" value="80" style="width:60px;padding:4px 8px;font-size:11px;text-align:center;"><span style="font-size:10px;color:var(--text-muted);">h</span></div></div>
+    </div></div>
+  </div>
+
+  <!-- BOTÃO CALCULAR -->
+  <div style="margin-bottom:16px;"><button class="btn-accent" style="width:100%;padding:12px;font-size:13px;" onclick="document.getElementById('sim-results').style.display='block'">Calcular Projeção — PR-HTX — 12 meses</button></div>
+
+  <!-- RESULTADOS (simulados) -->
+  <div id="sim-results" style="display:none;">
+
+  <!-- RESUMO FINANCEIRO -->
+  <div class="card full-width" style="margin-bottom:16px;">
+    <div class="card-head"><span class="card-title">Resumo Financeiro — PR-HTX — 12 Meses</span><span class="card-badge" style="background:var(--bg);color:var(--text-muted);border:1px solid var(--border);">Câmbio: R$ 5,45</span></div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;text-align:center;">
+        <div><div style="font-family:var(--mono);font-size:24px;font-weight:500;color:var(--red);">R$ 1.334.600</div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;margin-top:4px;">Custo Total Projetado</div><div style="font-size:9px;color:var(--text-muted);">peças + MO + contingência</div></div>
+        <div><div style="font-family:var(--mono);font-size:24px;font-weight:500;color:var(--orange);">R$ 1.080.000</div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;margin-top:4px;">Custo de Peças/Revisão</div><div style="font-size:9px;color:var(--text-muted);">componentes + consumíveis</div></div>
+        <div><div style="font-family:var(--mono);font-size:24px;font-weight:500;">R$ 92.640</div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;margin-top:4px;">Custo de Mão de Obra</div><div style="font-size:9px;color:var(--text-muted);">772h × R$ 120/h</div></div>
+        <div><div style="font-family:var(--mono);font-size:24px;font-weight:500;color:var(--yellow);">R$ 161.960</div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;margin-top:4px;">Contingência (15%)</div><div style="font-size:9px;color:var(--text-muted);">corretivas não planejadas</div></div>
+        <div><div style="font-family:var(--mono);font-size:24px;font-weight:500;color:var(--red);">R$ 975.000</div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;margin-top:4px;">Risco AOG (Receita)</div><div style="font-size:9px;color:var(--text-muted);">39 dias × R$ 25k/dia</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISPONIBILIDADE PROJETADA -->
+  <div class="grid-equal" style="margin-bottom:16px;">
+    <div class="card">
+      <div class="card-head"><span class="card-title">Disponibilidade Projetada — Mês a Mês</span></div>
+      <div class="card-body">
+        <div style="display:flex;gap:8px;align-items:flex-end;height:120px;margin-bottom:8px;">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;border-radius:2px 2px 0 0;background:var(--green);opacity:0.7;height:100px;"></div><div style="font-size:8px;color:var(--text-muted);font-family:var(--mono);">Mai</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;border-radius:2px 2px 0 0;background:var(--green);opacity:0.7;height:95px;"></div><div style="font-size:8px;color:var(--text-muted);font-family:var(--mono);">Jun</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;border-radius:2px 2px 0 0;background:var(--yellow);opacity:0.7;height:70px;"></div><div style="font-size:8px;color:var(--text-muted);font-family:var(--mono);">Jul</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;border-radius:2px 2px 0 0;background:var(--green);opacity:0.7;height:100px;"></div><div style="font-size:8px;color:var(--text-muted);font-family:var(--mono);">Ago</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;border-radius:2px 2px 0 0;background:var(--green);opacity:0.7;height:100px;"></div><div style="font-size:8px;color:var(--text-muted);font-family:var(--mono);">Set</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;border-radius:2px 2px 0 0;background:var(--green);opacity:0.7;height:100px;"></div><div style="font-size:8px;color:var(--text-muted);font-family:var(--mono);">Out</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;border-radius:2px 2px 0 0;background:var(--green);opacity:0.7;height:95px;"></div><div style="font-size:8px;color:var(--text-muted);font-family:var(--mono);">Nov</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;border-radius:2px 2px 0 0;background:var(--yellow);opacity:0.7;height:55px;"></div><div style="font-size:8px;color:var(--text-muted);font-family:var(--mono);">Dez</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;border-radius:2px 2px 0 0;background:var(--green);opacity:0.7;height:100px;"></div><div style="font-size:8px;color:var(--text-muted);font-family:var(--mono);">Jan</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;border-radius:2px 2px 0 0;background:var(--green);opacity:0.7;height:100px;"></div><div style="font-size:8px;color:var(--text-muted);font-family:var(--mono);">Fev</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;border-radius:2px 2px 0 0;background:var(--green);opacity:0.7;height:95px;"></div><div style="font-size:8px;color:var(--text-muted);font-family:var(--mono);">Mar</div></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;border-radius:2px 2px 0 0;background:var(--red);opacity:0.7;height:10px;"></div><div style="font-size:8px;color:var(--text-muted);font-family:var(--mono);">Abr</div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-muted);">
+          <span>🟢 100% disponível</span><span>🟡 Parada curta (1-5d)</span><span>🔴 AOG prolongado (30-45d)</span>
+        </div>
+        <div style="margin-top:12px;padding:8px 12px;background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);font-size:11px;color:var(--red);font-weight:600;">⚠ Mês crítico: Abril/2027 — Overhaul de turbina. Disponibilidade cairá para 0% por 30-45 dias. Peça deve ser encomendada até Dez/2026 para garantir entrega.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">Decomposição de Custos</span></div>
+      <div class="card-body">
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;margin-bottom:8px;"><div style="width:12px;height:12px;border-radius:1px;background:var(--orange);margin-right:8px;"></div><span style="font-size:12px;flex:1;">Peças e Revisões</span><span class="mono" style="font-size:12px;">R$ 1.080.000</span><span class="mono" style="font-size:10px;color:var(--text-muted);margin-left:8px;">80.9%</span></div>
+          <div style="height:8px;background:var(--bg);border:1px solid var(--border);border-radius:1px;overflow:hidden;margin-bottom:12px;"><div style="width:80.9%;height:100%;background:var(--orange);"></div></div>
+
+          <div style="display:flex;align-items:center;margin-bottom:8px;"><div style="width:12px;height:12px;border-radius:1px;background:var(--accent);margin-right:8px;"></div><span style="font-size:12px;flex:1;">Mão de Obra</span><span class="mono" style="font-size:12px;">R$ 92.640</span><span class="mono" style="font-size:10px;color:var(--text-muted);margin-left:8px;">6.9%</span></div>
+          <div style="height:8px;background:var(--bg);border:1px solid var(--border);border-radius:1px;overflow:hidden;margin-bottom:12px;"><div style="width:6.9%;height:100%;background:var(--accent);"></div></div>
+
+          <div style="display:flex;align-items:center;margin-bottom:8px;"><div style="width:12px;height:12px;border-radius:1px;background:var(--yellow);margin-right:8px;"></div><span style="font-size:12px;flex:1;">Contingência (15%)</span><span class="mono" style="font-size:12px;">R$ 161.960</span><span class="mono" style="font-size:10px;color:var(--text-muted);margin-left:8px;">12.1%</span></div>
+          <div style="height:8px;background:var(--bg);border:1px solid var(--border);border-radius:1px;overflow:hidden;"><div style="width:12.1%;height:100%;background:var(--yellow);"></div></div>
+        </div>
+        <div style="padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);font-size:11px;">
+          <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);"><span>Total Preventivo</span><span class="mono" style="font-weight:600;">R$ 1.334.600</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);"><span>Risco AOG (39 dias)</span><span class="mono" style="color:var(--red);">R$ 975.000</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;font-weight:700;"><span>Exposição Total</span><span class="mono" style="color:var(--red);">R$ 2.309.600</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMELINE DE EVENTOS -->
+  <div class="card full-width">
+    <div class="card-head"><span class="card-title">Timeline de Eventos — PR-HTX — 12 Meses</span><span class="card-badge" style="background:var(--bg);color:var(--text-muted);border:1px solid var(--border);">MO: R$ 120/h · Contingência: 15%</span></div>
+    <div class="card-body flush"><table class="tbl"><thead><tr><th>Data</th><th>Evento</th><th>Componente</th><th>Vida Rest.</th><th>Custo Peça</th><th>MO (horas)</th><th>Custo MO</th><th>Parada</th><th>Crit.</th></tr></thead><tbody>
+      <tr><td class="mono">Mai/2026</td><td>Vencimento TBO</td><td>Starter Generator</td><td class="mono" style="color:var(--yellow);">124h</td><td class="mono" style="color:var(--red);">R$ 90.000</td><td class="mono">12h</td><td class="mono">R$ 1.440</td><td class="mono">2 dias</td><td><span class="crit a">A</span></td></tr>
+      <tr><td class="mono">Jun/2026</td><td>Inspeção 100h</td><td>—</td><td class="mono">100h</td><td class="mono">R$ 15.000</td><td class="mono">8h</td><td class="mono">R$ 960</td><td class="mono">1 dia</td><td><span class="crit c">C</span></td></tr>
+      <tr><td class="mono">Jul/2026</td><td>Vencimento TBO</td><td>Servo Coletivo</td><td class="mono" style="color:var(--yellow);">187h</td><td class="mono" style="color:var(--orange);">R$ 120.000</td><td class="mono">16h</td><td class="mono">R$ 1.920</td><td class="mono">3 dias</td><td><span class="crit a">A</span></td></tr>
+      <tr><td class="mono">Jul/2026</td><td>Validade calendário</td><td>Bateria 24V</td><td class="mono">2 meses</td><td class="mono">R$ 12.000</td><td class="mono">2h</td><td class="mono">R$ 240</td><td class="mono">0.5 dia</td><td><span class="crit b">B</span></td></tr>
+      <tr><td class="mono">Dez/2026</td><td>Inspeção 600h</td><td>—</td><td class="mono">600h</td><td class="mono">R$ 55.000</td><td class="mono">40h</td><td class="mono">R$ 4.800</td><td class="mono">5 dias</td><td><span class="crit b">B</span></td></tr>
+      <tr style="background:var(--red-bg);"><td class="mono" style="font-weight:600;">Abr/2027</td><td style="font-weight:600;">Overhaul Turbina</td><td style="font-weight:600;">Turbina Arrius 2B2+</td><td class="mono" style="color:var(--red);">1.240h</td><td class="mono" style="color:var(--red);font-weight:700;">R$ 800.000</td><td class="mono" style="font-weight:600;">80h</td><td class="mono" style="font-weight:600;">R$ 9.600</td><td class="mono" style="font-weight:600;">30-45d</td><td><span class="crit a">A</span></td></tr>
+    </tbody>
+    <tfoot><tr style="background:var(--bg);"><td colspan="4" style="font-weight:700;padding:10px 12px;">TOTAL PREVENTIVO</td><td class="mono" style="font-weight:700;padding:10px 12px;">R$ 1.092.000</td><td class="mono" style="font-weight:600;padding:10px 12px;">158h</td><td class="mono" style="font-weight:600;padding:10px 12px;">R$ 18.960</td><td class="mono" style="font-weight:600;padding:10px 12px;">~42 dias</td><td></td></tr></tfoot>
+    </table></div>
+  </div>
+
+  <div style="margin-top:12px;display:flex;gap:12px;">
+    <button class="topbar-btn" style="border-color:var(--accent);color:var(--accent);">📄 Exportar Projeção (PDF)</button>
+    <button class="topbar-btn">📊 Comparar Cenários</button>
+    <button class="topbar-btn">🔄 Recalcular com Novos Parâmetros</button>
+  </div>
+
+  </div>
+</div>
+
+<div class="page" id="page-requisicoes">
+  <div class="section-title">Requisições de Campo</div>
+  <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;" class="filter-group"><button class="filter-btn active">Todas (8)</button><button class="filter-btn">AOG (2)</button><button class="filter-btn">Urgente (3)</button><button class="filter-btn">Kit (3)</button></div>
+  <div class="card full-width" style="border-left:3px solid var(--red);margin-bottom:12px;"><div class="card-body">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><div style="display:flex;align-items:center;gap:10px;"><div class="avatar-sm" style="background:var(--accent-light);color:var(--accent);">CM</div><div><div style="font-size:12px;font-weight:600;">Carlos Mendes</div><div style="font-size:10px;color:var(--text-muted);">📍 Macaé-RJ · há 45 min</div></div></div><span style="background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:2px;font-size:10px;font-weight:700;">AOG</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:10px;"><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;">Aeronave</div><div class="mono" style="font-size:12px;">PR-HLS · EC130</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;">P/N</div><div class="mono" style="font-size:12px;">6871103-A</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;">Peça</div><div style="font-size:12px;">Starter Generator</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;">Qtd</div><div class="mono" style="font-size:12px;">1</div></div></div>
+    <div style="padding:8px 12px;background:var(--bg-input);border-radius:var(--radius);font-size:11px;margin-bottom:10px;">"Starter fez barulho forte na 3ª partida. Tensão caindo para 24V."</div>
+    <div style="padding:6px 10px;background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);font-size:11px;color:var(--red);font-weight:600;margin-bottom:10px;">✕ Protheus: 0 em estoque · Lead time: 21 dias · Pedido em atraso há 94 dias</div>
+    <div style="display:flex;gap:8px;"><button class="arrival-btn" style="padding:6px 14px;font-size:10px;">✓ Aprovar</button><button style="padding:6px 14px;font-size:10px;border:1px solid var(--red-border);background:var(--red-bg);color:var(--red);border-radius:2px;cursor:pointer;font-weight:700;">✕ Rejeitar</button><button class="topbar-btn" style="font-size:10px;padding:6px 12px;">💬 Pedir Info</button></div>
+  </div></div>
+  <div class="card full-width" style="border-left:3px solid var(--yellow);"><div class="card-body">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><div style="display:flex;align-items:center;gap:10px;"><div class="avatar-sm" style="background:var(--accent-light);color:var(--accent);">JC</div><div><div style="font-size:12px;font-weight:600;">João Costa</div><div style="font-size:10px;color:var(--text-muted);">📍 Curitiba · há 5h</div></div></div><span style="background:var(--yellow-bg);color:var(--yellow);padding:2px 8px;border-radius:2px;font-size:10px;font-weight:700;">URGENTE</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:10px;"><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;">Aeronave</div><div class="mono" style="font-size:12px;">PR-YMD · AW139</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;">P/N</div><div class="mono" style="font-size:12px;">AW139-OFI-KIT</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;">Peça</div><div style="font-size:12px;">Kit filtros 100h</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;">Qtd</div><div class="mono" style="font-size:12px;">1</div></div></div>
+    <div style="padding:6px 10px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);font-size:11px;color:var(--green);font-weight:600;margin-bottom:10px;">✓ Protheus: 3 kits em estoque (CWB)</div>
+    <div style="display:flex;gap:8px;"><button class="arrival-btn" style="padding:6px 14px;font-size:10px;">✓ Aprovar</button><button style="padding:6px 14px;font-size:10px;border:1px solid var(--red-border);background:var(--red-bg);color:var(--red);border-radius:2px;cursor:pointer;font-weight:700;">✕ Rejeitar</button></div>
+  </div></div>
+</div>
+
+<div class="page" id="page-reparaveis">
+  <div class="section-title">Itens Reparáveis em Trânsito</div>
+  <div class="banner danger"><span class="banner-icon">⚠</span><span class="banner-text">2 itens Criticidade A fora há mais de 60 dias sem previsão de retorno</span></div>
+  <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;" class="filter-group"><button class="filter-btn active">Todos (8)</button><button class="filter-btn">Crit. A (3)</button><button class="filter-btn">Crit. B (3)</button><button class="filter-btn">Crit. C (2)</button><button class="filter-btn">60+ dias (4)</button></div>
+  <div class="card full-width"><div class="card-body flush"><table class="tbl"><thead><tr><th>P/N</th><th>S/N</th><th>Componente</th><th>Crit.</th><th>Aeronave</th><th>Oficina</th><th>Saída</th><th>Dias Fora</th><th>Previsão</th><th>Status</th></tr></thead><tbody>
+    <tr><td class="mono">EC135-MGB</td><td class="mono">MG-4521</td><td>Main Gearbox</td><td><span class="crit a">A</span></td><td class="mono">PR-BKL</td><td>Heliparts SP</td><td class="mono">15/01</td><td class="mono" style="color:var(--red);font-weight:600;">87d</td><td class="mono" style="color:var(--red);">Sem prev.</td><td><span class="status"><span class="status-dot red"></span>Atrasado</span></td></tr>
+    <tr><td class="mono">3G6220V03</td><td class="mono">T-8834</td><td>Turbina Arrius</td><td><span class="crit a">A</span></td><td class="mono">PR-AOG</td><td>Safran FR</td><td class="mono">09/02</td><td class="mono" style="color:var(--orange);">62d</td><td class="mono">Jun/2026</td><td><span class="status"><span class="status-dot yellow"></span>Em reparo</span></td></tr>
+    <tr><td class="mono">FADEC-H1</td><td class="mono">FC-112</td><td>FADEC Unit</td><td><span class="crit b">B</span></td><td class="mono">PR-FNX</td><td>Collins US</td><td class="mono">26/02</td><td class="mono" style="color:var(--yellow);">45d</td><td class="mono">Mai/2026</td><td><span class="status"><span class="status-dot blue"></span>Teste</span></td></tr>
+    <tr><td class="mono">SV-429-C</td><td class="mono">SV-0098</td><td>Servo Cauda</td><td><span class="crit b">B</span></td><td class="mono">PR-MVD</td><td>Bell CA</td><td class="mono">15/03</td><td class="mono">28d</td><td class="mono">Abr/2026</td><td><span class="status"><span class="status-dot blue"></span>Em reparo</span></td></tr>
+    <tr><td class="mono">6871103-A</td><td class="mono">SG-3301</td><td>Starter Gen.</td><td><span class="crit c">C</span></td><td class="mono">PR-KRT</td><td>Local CWB</td><td class="mono">01/04</td><td class="mono">12d</td><td class="mono">Abr/2026</td><td><span class="status"><span class="status-dot green"></span>Pronto</span></td></tr>
+  </tbody></table></div></div>
+</div>
+
+<div class="page" id="page-estoque">
+  <div class="section-title">Estoque — Leitura Protheus</div>
+  <div class="banner warning"><span class="banner-icon">⚠</span><span class="banner-text">Última importação: hoje 06:00 · 10.247 itens · <strong>847 P/N mapeados</strong></span><span class="banner-action">Importar agora</span></div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;"><input type="text" placeholder="Buscar por P/N, descrição ou código Protheus..." style="flex:1;padding:8px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text);"><div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;" class="filter-group"><button class="filter-btn active">Todos</button><button class="filter-btn">Mapeados (847)</button><button class="filter-btn">Não Mapeados</button><button class="filter-btn">Shelf Life</button></div></div>
+  <div class="card full-width"><div class="card-body flush"><table class="tbl"><thead><tr><th>Cód. Protheus</th><th>P/N</th><th>Descrição</th><th>Qtd</th><th>Almox.</th><th>Custo Médio</th><th>Mapeado?</th></tr></thead><tbody>
+    <tr><td class="mono">001.0234</td><td class="mono">6871103-A</td><td>Starter Generator EC135</td><td class="mono" style="color:var(--red);">0</td><td>CWB</td><td class="mono">R$ 88.500</td><td style="color:var(--green);font-weight:600;">✓</td></tr>
+    <tr><td class="mono">001.0891</td><td class="mono">AW139-OFI-KIT</td><td>Kit filtros inspeção 100h AW139</td><td class="mono" style="color:var(--green);">3</td><td>CWB</td><td class="mono">R$ 4.200</td><td style="color:var(--green);font-weight:600;">✓</td></tr>
+    <tr><td class="mono">001.1204</td><td class="mono">EC135-FO-12</td><td>Filtro óleo motor EC135</td><td class="mono">12</td><td>CWB/SP</td><td class="mono">R$ 380</td><td style="color:var(--green);font-weight:600;">✓</td></tr>
+    <tr><td class="mono">002.5511</td><td style="color:var(--text-muted);">—</td><td>Selante silicone aeronáutico 100ml</td><td class="mono">45</td><td>CWB</td><td class="mono">R$ 120</td><td><span style="color:var(--orange);font-weight:600;cursor:pointer;text-decoration:underline;">Mapear</span></td></tr>
+    <tr><td class="mono">003.0022</td><td style="color:var(--text-muted);">—</td><td>O-ring vedação hidráulica kit</td><td class="mono">88</td><td>CWB/SP/RJ</td><td class="mono">R$ 45</td><td><span style="color:var(--orange);font-weight:600;cursor:pointer;text-decoration:underline;">Mapear</span></td></tr>
+  </tbody></table></div></div>
+  <div style="margin-top:8px;font-size:9px;color:var(--text-muted);">O FlytCore não escreve no Protheus. Esta tela é somente leitura.</div>
+</div>
+
+<div class="page" id="page-pedidos">
+  <div class="section-title">Pedidos de Compra — Leitura Protheus</div>
+  <div class="backlog-note" style="margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius);">BASE: Pedidos a partir de JAN/2026 (migração almoxarifado Cavok → Protheus)</div>
+  <div style="display:flex;gap:16px;margin-bottom:16px;"><div class="kpi" style="flex:1;"><div class="kpi-label">Abertos</div><div class="kpi-value" style="font-size:22px;">48</div></div><div class="kpi" style="flex:1;"><div class="kpi-label">Em Atraso</div><div class="kpi-value" style="font-size:22px;color:var(--red);">31</div></div><div class="kpi" style="flex:1;"><div class="kpi-label">Entregues (Mês)</div><div class="kpi-value" style="font-size:22px;color:var(--green);">12</div></div><div class="kpi" style="flex:1;"><div class="kpi-label">Crescimento</div><div class="kpi-value" style="font-size:22px;color:var(--red);">+3/sem</div></div></div>
+  <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;" class="filter-group"><button class="filter-btn active">Todos (48)</button><button class="filter-btn">Em Atraso (31)</button><button class="filter-btn">No Prazo (12)</button><button class="filter-btn">Entregues (5)</button></div>
+  <div class="card full-width"><div class="card-body flush" style="max-height:500px;overflow-y:auto;"><table class="tbl"><thead><tr><th>Pedido</th><th>P/N</th><th>Peça</th><th>Fornecedor</th><th>Data</th><th>Prev.</th><th>Atraso</th><th>Aeronave</th><th>Impacto</th></tr></thead><tbody>
+    <tr><td class="mono">#PC-4521</td><td class="mono">6871103-A</td><td>Starter Gen.</td><td>Heliparts</td><td class="mono">08/01</td><td class="mono" style="color:var(--red);">15/02</td><td class="mono" style="color:var(--red);font-weight:700;">94d</td><td class="mono" style="color:var(--red);">PR-HLS (AOG)</td><td class="mono" style="color:var(--red);">R$ 25k/d</td></tr>
+    <tr><td class="mono">#PC-4533</td><td class="mono">3G6220V03</td><td>Turbina</td><td>Safran HE</td><td class="mono">20/01</td><td class="mono" style="color:var(--red);">01/03</td><td class="mono" style="color:var(--red);font-weight:700;">82d</td><td class="mono" style="color:var(--red);">PR-AOG (AOG)</td><td class="mono" style="color:var(--red);">R$ 38k/d</td></tr>
+    <tr><td class="mono">#PC-4558</td><td class="mono">0530035-3</td><td>Servo Colet.</td><td>Collins</td><td class="mono">04/02</td><td class="mono" style="color:var(--orange);">20/03</td><td class="mono" style="color:var(--orange);">67d</td><td class="mono">PR-YMD (MNT)</td><td class="mono">R$ 8k/d</td></tr>
+    <tr><td class="mono">#PC-4648</td><td class="mono">EC135-FO-12</td><td>Filtro óleo</td><td>Airbus</td><td class="mono">01/04</td><td class="mono" style="color:var(--green);">25/04</td><td class="mono" style="color:var(--green);">No prazo</td><td class="mono">Estoque geral</td><td class="mono">—</td></tr>
+  </tbody></table></div></div>
+</div>
+
+<div class="page" id="page-compliance">
+  <div class="section-title">Conformidade AD/SB</div>
+  <div style="display:flex;gap:16px;margin-bottom:16px;"><div class="kpi" style="flex:1;text-align:center;"><div class="kpi-value" style="font-size:28px;color:var(--green);">96%</div><div class="kpi-label" style="margin-top:4px;">Aplicados</div></div><div class="kpi" style="flex:1;text-align:center;"><div class="kpi-value" style="font-size:28px;color:var(--yellow);">3</div><div class="kpi-label" style="margin-top:4px;">Pendentes</div></div><div class="kpi" style="flex:1;text-align:center;"><div class="kpi-value" style="font-size:28px;color:var(--green);">100%</div><div class="kpi-label" style="margin-top:4px;">Com Foto</div></div></div>
+  <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;" class="filter-group"><button class="filter-btn active">Todas (74)</button><button class="filter-btn">AD (45)</button><button class="filter-btn">SB (29)</button><button class="filter-btn">Pendentes (3)</button></div>
+  <div class="card full-width"><div class="card-body flush"><table class="tbl"><thead><tr><th>Tipo</th><th>Número</th><th>Título</th><th>Modelos</th><th>Data</th><th>Afetadas</th><th>Status</th></tr></thead><tbody>
+    <tr><td><span style="background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:2px;font-size:10px;font-weight:700;font-family:var(--mono);">AD</span></td><td class="mono">2026-04-12</td><td>Inspeção trinca carenagem</td><td>EC135</td><td class="mono">15/04</td><td class="mono">12</td><td style="color:var(--yellow);font-weight:600;">⏳ Pendente (3/12)</td></tr>
+    <tr><td><span style="background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:2px;font-size:10px;font-weight:700;font-family:var(--mono);">AD</span></td><td class="mono">2026-02-08</td><td>Sensor torque MGB</td><td>AW139</td><td class="mono">01/03</td><td class="mono">8</td><td style="color:var(--green);font-weight:600;">✓ 100%</td></tr>
+    <tr><td><span style="background:var(--yellow-bg);color:var(--yellow);padding:2px 8px;border-radius:2px;font-size:10px;font-weight:700;font-family:var(--mono);">SB</span></td><td class="mono">EC135-76-042</td><td>Software VEMD v4.2</td><td>EC135</td><td class="mono">10/01</td><td class="mono">12</td><td style="color:var(--green);font-weight:600;">✓ 100%</td></tr>
+  </tbody></table></div></div>
+  <div style="margin-top:12px;display:flex;gap:12px;"><button class="topbar-btn" style="border-color:var(--accent);color:var(--accent);">+ Cadastrar AD/SB</button><button class="topbar-btn">📄 Gerar Relatório Conformidade (PDF)</button></div>
+</div>
+
+<div class="page" id="page-auditoria">
+  <div class="section-title">Auditoria Rápida — 60 Segundos</div>
+  <div class="grid-equal">
+    <div><div class="card" style="margin-bottom:16px;"><div class="card-head"><span class="card-title">Selecionar Aeronave</span></div><div class="card-body"><select style="width:100%;padding:10px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:var(--mono);color:var(--text);margin-bottom:12px;"><option>PR-HTX — EC135 T3 — Score 92</option><option>PR-YMD — AW139 — Score 58</option></select><button class="topbar-btn" style="width:100%;justify-content:center;border-color:var(--accent);color:var(--accent);padding:12px;">⚡ Gerar Auditoria Rápida</button></div></div><div style="font-size:11px;color:var(--text-muted);line-height:1.6;">PDF com score, horas, vencimentos, fotos e QR Code de verificação válido por 72h.</div></div>
+    <div class="card"><div style="background:var(--accent);padding:16px;text-align:center;"><div style="font-family:var(--mono);font-weight:500;font-size:14px;color:#fff;letter-spacing:2px;">FLYTCORE</div><div style="font-size:10px;color:rgba(255,255,255,0.7);">Certificado de Saúde</div></div><div class="card-body">
+      <div style="text-align:center;margin-bottom:12px;"><div style="font-family:var(--mono);font-size:20px;font-weight:700;">PR-HTX</div><div style="font-size:11px;color:var(--text-muted);">EC135 T3 · S/N 2104</div></div>
+      <div style="display:flex;justify-content:center;margin-bottom:12px;"><div style="background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);padding:10px 20px;text-align:center;"><div style="font-family:var(--mono);font-size:28px;font-weight:500;color:var(--green);">92</div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;">Score</div></div></div>
+      <div style="font-size:11px;"><div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span style="color:var(--text-muted);">Horas Totais</span><span class="mono">4.872,3h</span></div><div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span style="color:var(--text-muted);">Próx. Venc.</span><span class="mono" style="color:var(--green);">124h</span></div><div style="display:flex;justify-content:space-between;padding:5px 0;"><span style="color:var(--text-muted);">Completude</span><span class="mono" style="color:var(--green);">100%</span></div></div>
+      <div style="margin-top:12px;display:flex;gap:6px;"><div style="flex:1;height:40px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text-muted);">Turbina</div><div style="flex:1;height:40px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text-muted);">MGB</div><div style="flex:1;height:40px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--text-muted);">Servo</div></div>
+      <div style="margin-top:12px;text-align:center;padding:8px;background:var(--bg);border-radius:var(--radius);"><div style="width:48px;height:48px;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:7px;color:var(--text-muted);font-family:var(--mono);">QR 72h</div></div>
+    </div></div>
+  </div>
+</div>
+
+<div class="page" id="page-log">
+  <div class="section-title">Log de Auditoria Imutável</div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;"><input type="text" placeholder="Filtrar por aeronave, usuário ou ação..." style="flex:1;padding:8px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text);"><button class="topbar-btn">Exportar CSV</button></div>
+  <div class="card full-width"><div class="card-body flush" style="max-height:500px;overflow-y:auto;"><table class="tbl"><thead><tr><th>Data/Hora</th><th>Usuário</th><th>Ação</th><th>Entidade</th><th>Detalhes</th><th>GPS</th><th>Hash</th></tr></thead><tbody>
+    <tr><td class="mono" style="font-size:10px;">11/04 16:42</td><td>João Costa</td><td>task_completed</td><td class="mono">OS #0849</td><td style="font-size:10px;">Foto + Filtro OK</td><td class="mono" style="font-size:9px;">-25.43,-49.27</td><td class="mono" style="font-size:9px;color:var(--text-muted);">a3f2b1…</td></tr>
+    <tr><td class="mono" style="font-size:10px;">11/04 14:32</td><td>Inspetor</td><td>os_approved</td><td class="mono">OS #0847</td><td style="font-size:10px;">5 tarefas validadas</td><td class="mono" style="font-size:9px;">-25.43,-49.27</td><td class="mono" style="font-size:9px;color:var(--text-muted);">b82d9f…</td></tr>
+    <tr><td class="mono" style="font-size:10px;">11/04 09:15</td><td>Carlos Mendes</td><td>part_request</td><td class="mono">REQ-0412</td><td style="font-size:10px;">P/N 6871103-A AOG</td><td class="mono" style="font-size:9px;">-22.37,-41.78</td><td class="mono" style="font-size:9px;color:var(--text-muted);">c44f21…</td></tr>
+    <tr><td class="mono" style="font-size:10px;">11/04 06:00</td><td>Sistema</td><td>import_stock</td><td class="mono">—</td><td style="font-size:10px;">10.247 itens</td><td class="mono" style="font-size:9px;">—</td><td class="mono" style="font-size:9px;color:var(--text-muted);">f19a83…</td></tr>
+  </tbody></table></div></div>
+  <div style="margin-top:8px;font-size:9px;color:var(--text-muted);">Hash SHA-256 encadeado. Alteração retroativa invalida toda a cadeia.</div>
+</div>
+
+<div class="page" id="page-usuarios">
+  <div class="section-title">Gestão de Usuários</div>
+  <div style="display:flex;justify-content:space-between;margin-bottom:16px;"><input type="text" placeholder="Buscar..." style="width:300px;padding:8px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text);"><button class="topbar-btn" style="border-color:var(--accent);color:var(--accent);">+ Adicionar</button></div>
+  <div class="card full-width"><div class="card-body flush"><table class="tbl"><thead><tr><th>Nome</th><th>Email</th><th>Perfil</th><th>CANAC</th><th>Status</th><th>Última Atividade</th></tr></thead><tbody>
+    <tr><td style="font-weight:600;">João Costa</td><td class="mono" style="font-size:11px;">j.costa@empresa.com</td><td><span style="background:var(--accent-light);color:var(--accent);padding:2px 8px;border-radius:2px;font-size:10px;font-weight:600;">Mecânico</span></td><td class="mono">4521-MCA</td><td><span class="status"><span class="status-dot green"></span>Ativo</span></td><td class="mono" style="font-size:10px;">há 25 min</td></tr>
+    <tr><td style="font-weight:600;">Carlos Mendes</td><td class="mono" style="font-size:11px;">c.mendes@empresa.com</td><td><span style="background:var(--accent-light);color:var(--accent);padding:2px 8px;border-radius:2px;font-size:10px;font-weight:600;">Mecânico</span></td><td class="mono">3987-MCA</td><td><span class="status"><span class="status-dot green"></span>Ativo</span></td><td class="mono" style="font-size:10px;">há 45 min</td></tr>
+    <tr><td style="font-weight:600;">Ana Soares</td><td class="mono" style="font-size:11px;">a.soares@empresa.com</td><td><span style="background:var(--yellow-bg);color:var(--yellow);padding:2px 8px;border-radius:2px;font-size:10px;font-weight:600;">Planejador</span></td><td class="mono">—</td><td><span class="status"><span class="status-dot green"></span>Ativo</span></td><td class="mono" style="font-size:10px;">há 1h</td></tr>
+    <tr><td style="font-weight:600;">Laura Ferreira</td><td class="mono" style="font-size:11px;">l.ferreira@empresa.com</td><td><span style="background:var(--orange-bg);color:var(--orange);padding:2px 8px;border-radius:2px;font-size:10px;font-weight:600;">Compras</span></td><td class="mono">—</td><td><span class="status"><span class="status-dot green"></span>Ativo</span></td><td class="mono" style="font-size:10px;">hoje 08:00</td></tr>
+  </tbody></table></div></div>
+</div>
+
+<div class="page" id="page-importacao">
+  <div class="section-title">Importação de Dados — Fontes Externas</div>
+  <div style="padding:8px 14px;background:var(--accent-light);border:1px solid #B8D4FF;border-radius:var(--radius);font-size:11px;color:var(--accent);margin-bottom:16px;font-weight:500;">O FlytCore nunca cria dados operacionais. Ele consome de 5 fontes (Protheus e Cavok) e adiciona inteligência: fotos, GPS, match automático, score de saúde e rastreabilidade.</div>
+
+  <div class="section-title" style="margin-top:4px;">Protheus (TOTVS)</div>
+  <div class="grid-equal" style="margin-bottom:16px;">
+
+    <!-- BLOCO 1: Estoque -->
+    <div class="card"><div class="card-head"><span class="card-title">Protheus → Estoque</span><span class="card-badge" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);">Sincronizado</span></div><div class="card-body">
+      <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">Última importação: <strong>hoje 06:00</strong></div>
+      <div style="font-size:10px;color:var(--text-muted);margin-bottom:12px;">10.247 itens · 847 P/N mapeados · Almoxarifados: CWB, SP, RJ, Macaé</div>
+      <div style="display:flex;gap:1px;margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+        <button class="topbar-btn" style="flex:1;justify-content:center;border:none;border-radius:0;background:var(--accent-light);color:var(--accent);font-weight:600;" id="est-csv-btn" onclick="this.style.background='var(--accent-light)';this.style.color='var(--accent)';document.getElementById('est-api-btn').style.background='var(--bg)';document.getElementById('est-api-btn').style.color='var(--text-muted)';document.getElementById('est-csv').style.display='block';document.getElementById('est-api').style.display='none';">📁 Via Arquivo CSV</button>
+        <button class="topbar-btn" style="flex:1;justify-content:center;border:none;border-radius:0;background:var(--bg);color:var(--text-muted);" id="est-api-btn" onclick="this.style.background='var(--accent-light)';this.style.color='var(--accent)';document.getElementById('est-csv-btn').style.background='var(--bg)';document.getElementById('est-csv-btn').style.color='var(--text-muted)';document.getElementById('est-api').style.display='block';document.getElementById('est-csv').style.display='none';">⚡ Via API REST</button>
+      </div>
+      <div id="est-csv"><div style="border:2px dashed var(--border);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;margin-bottom:8px;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:16px;margin-bottom:4px;">📁</div><div style="font-size:10px;color:var(--text-secondary);">Arrastar <strong>estoque_diario.csv</strong> ou clicar</div></div><button class="btn-accent" style="width:100%;font-size:11px;padding:8px;">Importar Estoque</button></div>
+      <div id="est-api" style="display:none;"><div style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;"><div class="wz-label">Endpoint Protheus</div><input class="wz-input mono" value="https://erp.empresa.com/api/v1/estoque" style="font-size:10px;padding:6px 8px;"><div style="display:flex;gap:8px;margin-top:8px;"><div style="flex:1;"><div class="wz-label">Intervalo</div><select class="wz-input" style="font-size:10px;padding:6px 8px;"><option>A cada 6 horas</option><option>A cada 12 horas</option><option>Diário (06:00)</option></select></div><div style="flex:1;"><div class="wz-label">Status</div><div style="padding:6px 8px;font-size:10px;color:var(--green);font-weight:600;">● Conectado</div></div></div></div><button class="btn-accent" style="width:100%;font-size:11px;padding:8px;">Testar Conexão</button></div>
+    </div></div>
+
+    <!-- BLOCO 2: Pedidos -->
+    <div class="card"><div class="card-head"><span class="card-title">Protheus → Pedidos de Compra</span><span class="card-badge" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);">Sincronizado</span></div><div class="card-body">
+      <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">Última importação: <strong>hoje 06:00</strong></div>
+      <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">48 pedidos abertos · 31 em atraso · Base: Jan/2026+</div>
+      <div style="font-size:9px;color:var(--orange);font-weight:600;margin-bottom:12px;">⚠ Base a partir de JAN/2026 (migração Cavok → Protheus)</div>
+      <div style="display:flex;gap:1px;margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+        <button class="topbar-btn" style="flex:1;justify-content:center;border:none;border-radius:0;background:var(--accent-light);color:var(--accent);font-weight:600;">📁 Via Arquivo CSV</button>
+        <button class="topbar-btn" style="flex:1;justify-content:center;border:none;border-radius:0;background:var(--bg);color:var(--text-muted);">⚡ Via API REST</button>
+      </div>
+      <div style="border:2px dashed var(--border);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;margin-bottom:8px;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:16px;margin-bottom:4px;">📁</div><div style="font-size:10px;color:var(--text-secondary);">Arrastar <strong>pedidos_compra.csv</strong> ou clicar</div></div>
+      <button class="btn-accent" style="width:100%;font-size:11px;padding:8px;">Importar Pedidos</button>
+    </div></div>
+  </div>
+
+  <div class="section-title">Cavok Aviação</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+
+    <!-- BLOCO 3: Horas -->
+    <div class="card"><div class="card-head"><span class="card-title">Cavok → Horas de Voo e Ciclos</span><span class="card-badge" style="background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-border);">18h atrás</span></div><div class="card-body">
+      <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">Última: <strong>ontem 14:00</strong></div>
+      <div style="font-size:10px;color:var(--text-muted);margin-bottom:12px;">97 aeronaves · Horímetro + ciclos de motor</div>
+      <div style="display:flex;gap:1px;margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+        <button class="topbar-btn" style="flex:1;justify-content:center;border:none;border-radius:0;background:var(--accent-light);color:var(--accent);font-weight:600;font-size:10px;">📁 CSV</button>
+        <button class="topbar-btn" style="flex:1;justify-content:center;border:none;border-radius:0;background:var(--bg);color:var(--text-muted);font-size:10px;">⚡ API</button>
+        <button class="topbar-btn" style="flex:1;justify-content:center;border:none;border-radius:0;background:var(--bg);color:var(--text-muted);font-size:10px;">✏️ Manual</button>
+      </div>
+      <div style="border:2px dashed var(--border);border-radius:var(--radius);padding:16px;text-align:center;cursor:pointer;margin-bottom:8px;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:14px;margin-bottom:2px;">📁</div><div style="font-size:9px;color:var(--text-secondary);">horas_frota.csv</div></div>
+      <button class="btn-accent" style="width:100%;font-size:11px;padding:8px;">Importar Horas</button>
+    </div></div>
+
+    <!-- BLOCO 4: CTM -->
+    <div class="card"><div class="card-head"><span class="card-title">Cavok → CTM / AD-SB</span><span class="card-badge" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);">Sincronizado</span></div><div class="card-body">
+      <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">Última: <strong>hoje 06:00</strong></div>
+      <div style="font-size:10px;color:var(--text-muted);margin-bottom:12px;">Vencimentos, status técnico, diretivas AD/SB</div>
+      <div style="display:flex;gap:1px;margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+        <button class="topbar-btn" style="flex:1;justify-content:center;border:none;border-radius:0;background:var(--accent-light);color:var(--accent);font-weight:600;font-size:10px;">📁 CSV</button>
+        <button class="topbar-btn" style="flex:1;justify-content:center;border:none;border-radius:0;background:var(--bg);color:var(--text-muted);font-size:10px;">⚡ API</button>
+      </div>
+      <div style="border:2px dashed var(--border);border-radius:var(--radius);padding:16px;text-align:center;cursor:pointer;margin-bottom:8px;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:14px;margin-bottom:2px;">📁</div><div style="font-size:9px;color:var(--text-secondary);">ctm_vencimentos.csv</div></div>
+      <button class="btn-accent" style="width:100%;font-size:11px;padding:8px;">Importar CTM</button>
+    </div></div>
+
+    <!-- BLOCO 5: Ordens de Serviço -->
+    <div class="card"><div class="card-head"><span class="card-title">Cavok → Ordens de Serviço</span><span class="card-badge" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);">Sincronizado</span></div><div class="card-body">
+      <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">Última: <strong>hoje 06:00</strong></div>
+      <div style="font-size:10px;color:var(--text-muted);margin-bottom:12px;">OS criadas pelo planejamento no Cavok → match com aeronave</div>
+      <div style="display:flex;gap:1px;margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+        <button class="topbar-btn" style="flex:1;justify-content:center;border:none;border-radius:0;background:var(--accent-light);color:var(--accent);font-weight:600;font-size:10px;">📁 CSV</button>
+        <button class="topbar-btn" style="flex:1;justify-content:center;border:none;border-radius:0;background:var(--bg);color:var(--text-muted);font-size:10px;">⚡ API</button>
+      </div>
+      <div style="border:2px dashed var(--border);border-radius:var(--radius);padding:16px;text-align:center;cursor:pointer;margin-bottom:8px;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:14px;margin-bottom:2px;">📁</div><div style="font-size:9px;color:var(--text-secondary);">ordens_servico.csv</div></div>
+      <button class="btn-accent" style="width:100%;font-size:11px;padding:8px;">Importar OS</button>
+    </div></div>
+  </div>
+
+  <div class="section-title">Log de Importações</div>
+  <div class="card full-width"><div class="card-body flush"><table class="tbl"><thead><tr><th>Data/Hora</th><th>Fonte</th><th>Arquivo / API</th><th>Registros</th><th>Novos</th><th>Atualizados</th><th>Status</th></tr></thead><tbody>
+    <tr><td class="mono" style="font-size:10px;">11/04 06:00</td><td style="font-size:10px;">Protheus</td><td style="font-size:10px;">estoque_diario.csv</td><td class="mono">10.247</td><td class="mono" style="color:var(--accent);">3</td><td class="mono">84</td><td style="color:var(--green);font-size:10px;font-weight:600;">✓ OK</td></tr>
+    <tr><td class="mono" style="font-size:10px;">11/04 06:00</td><td style="font-size:10px;">Protheus</td><td style="font-size:10px;">pedidos_compra.csv</td><td class="mono">48</td><td class="mono" style="color:var(--accent);">2</td><td class="mono">5</td><td style="color:var(--green);font-size:10px;font-weight:600;">✓ OK</td></tr>
+    <tr><td class="mono" style="font-size:10px;">11/04 06:00</td><td style="font-size:10px;">Cavok</td><td style="font-size:10px;">ctm_vencimentos.csv</td><td class="mono">3.840</td><td class="mono" style="color:var(--accent);">0</td><td class="mono">97</td><td style="color:var(--green);font-size:10px;font-weight:600;">✓ OK</td></tr>
+    <tr><td class="mono" style="font-size:10px;">11/04 06:00</td><td style="font-size:10px;">Cavok</td><td style="font-size:10px;">ordens_servico.csv</td><td class="mono">12</td><td class="mono" style="color:var(--accent);">1</td><td class="mono">3</td><td style="color:var(--green);font-size:10px;font-weight:600;">✓ OK</td></tr>
+    <tr><td class="mono" style="font-size:10px;">10/04 14:00</td><td style="font-size:10px;">Cavok</td><td style="font-size:10px;">horas_frota.csv</td><td class="mono">97</td><td class="mono" style="color:var(--accent);">0</td><td class="mono">42</td><td style="color:var(--green);font-size:10px;font-weight:600;">✓ OK</td></tr>
+    <tr><td class="mono" style="font-size:10px;">10/04 06:00</td><td style="font-size:10px;">Protheus</td><td style="font-size:10px;">estoque_diario.csv</td><td class="mono">10.244</td><td class="mono" style="color:var(--accent);">0</td><td class="mono">12</td><td style="color:var(--green);font-size:10px;font-weight:600;">✓ OK</td></tr>
+  </tbody></table></div></div>
+
+  <div style="margin-top:12px;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);font-size:10px;color:var(--text-muted);line-height:1.6;">
+    <strong>Fluxo de dados:</strong> O FlytCore nunca escreve nos ERPs. Ele lê dados via CSV ou API, faz match automático com aeronaves/OS, e gera tarefas para o administrativo executar manualmente nos sistemas de origem. A coluna "Novos" mostra itens que apareceram pela primeira vez. "Atualizados" mostra itens cujos dados mudaram desde a última importação.
+  </div>
+</div>
+
+<div class="page" id="page-config">
+  <div class="section-title">Configurações do Sistema</div>
+
+  <!-- VALOR DE MERCADO E CUSTO/HORA -->
+  <div class="section-title" style="margin-top:4px;">Dados de Engenharia / Gestão (cadastro interno)</div>
+  <div style="padding:6px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);font-size:9px;color:var(--text-muted);margin-bottom:12px;font-family:var(--mono);">Estes dados não vêm de nenhum ERP. São informados pelo engenheiro/gestor e alimentam o Score de Saúde, o Simulador de Projeção e o Valor Patrimonial no Dashboard.</div>
+
+  <div class="grid-equal" style="margin-bottom:16px;">
+    <!-- VALOR DE MERCADO POR AERONAVE -->
+    <div class="card"><div class="card-head"><span class="card-title">Valor de Mercado por Aeronave</span><span class="card-badge" style="background:var(--accent-light);color:var(--accent);border:1px solid #B8D4FF;">62 cadastradas</span></div><div class="card-body">
+      <div style="font-size:10px;color:var(--text-muted);margin-bottom:12px;">Valor de mercado real (não contábil). Baseado em Bluebook/Vref. Atualizar anualmente ou na compra/venda. O Protheus tem o valor fiscal (depreciação) — aqui é o valor comercial real.</div>
+      <div style="max-height:280px;overflow-y:auto;">
+        <table class="tbl">
+          <thead><tr><th>Prefixo</th><th>Modelo</th><th>Ano</th><th>Horas</th><th style="text-align:right;">Valor de Mercado (USD)</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="mono">PR-HTX</td><td>EC135 T3</td><td class="mono">2018</td><td class="mono">4.872h</td><td style="text-align:right;"><input class="wz-input mono" type="text" value="3.200.000" style="width:130px;padding:4px 8px;font-size:11px;text-align:right;display:inline;"></td><td style="text-align:center;"><button class="arrival-btn" style="font-size:8px;padding:2px 6px;">Salvar</button></td></tr>
+            <tr><td class="mono">PR-YMD</td><td>AW139</td><td class="mono">2016</td><td class="mono">6.210h</td><td style="text-align:right;"><input class="wz-input mono" type="text" value="8.500.000" style="width:130px;padding:4px 8px;font-size:11px;text-align:right;display:inline;"></td><td style="text-align:center;"><button class="arrival-btn" style="font-size:8px;padding:2px 6px;">Salvar</button></td></tr>
+            <tr><td class="mono">PR-FNX</td><td>H145</td><td class="mono">2020</td><td class="mono">2.100h</td><td style="text-align:right;"><input class="wz-input mono" type="text" value="9.800.000" style="width:130px;padding:4px 8px;font-size:11px;text-align:right;display:inline;"></td><td style="text-align:center;"><button class="arrival-btn" style="font-size:8px;padding:2px 6px;">Salvar</button></td></tr>
+            <tr><td class="mono">PR-HLS</td><td>EC130 T2</td><td class="mono">2015</td><td class="mono">5.340h</td><td style="text-align:right;"><input class="wz-input mono" type="text" value="1.800.000" style="width:130px;padding:4px 8px;font-size:11px;text-align:right;display:inline;"></td><td style="text-align:center;"><button class="arrival-btn" style="font-size:8px;padding:2px 6px;">Salvar</button></td></tr>
+            <tr><td class="mono">PR-KRT</td><td>EC135 T3</td><td class="mono">2019</td><td class="mono">3.400h</td><td style="text-align:right;"><input class="wz-input mono" type="text" value="3.800.000" style="width:130px;padding:4px 8px;font-size:11px;text-align:right;display:inline;"></td><td style="text-align:center;"><button class="arrival-btn" style="font-size:8px;padding:2px 6px;">Salvar</button></td></tr>
+            <tr><td class="mono">PR-MVD</td><td>Bell 429</td><td class="mono">2017</td><td class="mono">4.100h</td><td style="text-align:right;"><input class="wz-input mono" type="text" value="5.400.000" style="width:130px;padding:4px 8px;font-size:11px;text-align:right;display:inline;"></td><td style="text-align:center;"><button class="arrival-btn" style="font-size:8px;padding:2px 6px;">Salvar</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:10px;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);display:flex;justify-content:space-between;align-items:center;">
+        <div><span style="font-size:10px;color:var(--text-muted);">Valor total da frota (USD):</span><span class="mono" style="font-size:14px;font-weight:600;margin-left:8px;">US$ 163.600.000</span></div>
+        <div><span style="font-size:10px;color:var(--text-muted);">Câmbio R$ 5,45 =</span><span class="mono" style="font-size:14px;font-weight:600;margin-left:8px;color:var(--accent);">R$ 891.620.000</span></div>
+      </div>
+      <div style="font-size:9px;color:var(--text-muted);margin-top:6px;">Este valor alimenta o "Valor Patrimonial Estimado" no Dashboard. Diferente do valor contábil do Protheus (depreciação fiscal).</div>
+    </div></div>
+
+    <!-- CUSTO/HORA POR MODELO -->
+    <div class="card"><div class="card-head"><span class="card-title">Custo por Hora de Voo — por Modelo</span><span class="card-badge" style="background:var(--accent-light);color:var(--accent);border:1px solid #B8D4FF;">6 modelos</span></div><div class="card-body">
+      <div style="font-size:10px;color:var(--text-muted);margin-bottom:12px;">Custo médio estimado de operação por hora de voo. Inclui depreciação de componentes + consumíveis. Informado pelo engenheiro com base no histórico. Não inclui combustível nem tripulação.</div>
+      <table class="tbl">
+        <thead><tr><th>Modelo</th><th>Qtd Frota</th><th style="text-align:right;">Custo/Hora (R$)</th><th style="text-align:right;">Custo/Hora (USD)</th><th></th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:600;">AW139</td><td class="mono">18</td><td style="text-align:right;"><input class="wz-input mono" type="text" value="4.820" style="width:100px;padding:4px 8px;font-size:11px;text-align:right;display:inline;"></td><td class="mono" style="text-align:right;font-size:11px;color:var(--text-muted);">US$ 884</td><td style="text-align:center;"><button class="arrival-btn" style="font-size:8px;padding:2px 6px;">Salvar</button></td></tr>
+          <tr><td style="font-weight:600;">H145</td><td class="mono">12</td><td style="text-align:right;"><input class="wz-input mono" type="text" value="3.640" style="width:100px;padding:4px 8px;font-size:11px;text-align:right;display:inline;"></td><td class="mono" style="text-align:right;font-size:11px;color:var(--text-muted);">US$ 668</td><td style="text-align:center;"><button class="arrival-btn" style="font-size:8px;padding:2px 6px;">Salvar</button></td></tr>
+          <tr><td style="font-weight:600;">Bell 429</td><td class="mono">8</td><td style="text-align:right;"><input class="wz-input mono" type="text" value="2.980" style="width:100px;padding:4px 8px;font-size:11px;text-align:right;display:inline;"></td><td class="mono" style="text-align:right;font-size:11px;color:var(--text-muted);">US$ 547</td><td style="text-align:center;"><button class="arrival-btn" style="font-size:8px;padding:2px 6px;">Salvar</button></td></tr>
+          <tr><td style="font-weight:600;">EC135 T3</td><td class="mono">22</td><td style="text-align:right;"><input class="wz-input mono" type="text" value="2.210" style="width:100px;padding:4px 8px;font-size:11px;text-align:right;display:inline;"></td><td class="mono" style="text-align:right;font-size:11px;color:var(--text-muted);">US$ 405</td><td style="text-align:center;"><button class="arrival-btn" style="font-size:8px;padding:2px 6px;">Salvar</button></td></tr>
+          <tr><td style="font-weight:600;">EC130 T2</td><td class="mono">15</td><td style="text-align:right;"><input class="wz-input mono" type="text" value="1.850" style="width:100px;padding:4px 8px;font-size:11px;text-align:right;display:inline;"></td><td class="mono" style="text-align:right;font-size:11px;color:var(--text-muted);">US$ 339</td><td style="text-align:center;"><button class="arrival-btn" style="font-size:8px;padding:2px 6px;">Salvar</button></td></tr>
+          <tr><td style="font-weight:600;">Bell 407GXi</td><td class="mono">22</td><td style="text-align:right;"><input class="wz-input mono" type="text" value="2.450" style="width:100px;padding:4px 8px;font-size:11px;text-align:right;display:inline;"></td><td class="mono" style="text-align:right;font-size:11px;color:var(--text-muted);">US$ 449</td><td style="text-align:center;"><button class="arrival-btn" style="font-size:8px;padding:2px 6px;">Salvar</button></td></tr>
+        </tbody>
+      </table>
+      <div style="font-size:9px;color:var(--text-muted);margin-top:8px;">Estes valores alimentam o gráfico "Custo Médio por Hora de Voo" no Dashboard e o Simulador de Projeção. A conversão USD usa o câmbio configurado no Simulador.</div>
+    </div></div>
+  </div>
+
+  <div class="section-title">Mapeamento e Onboarding</div>
+  <div class="grid-equal">
+    <div class="card"><div class="card-head"><span class="card-title">Mapeamento P/N</span></div><div class="card-body">
+      <div style="font-size:11px;color:var(--text-secondary);margin-bottom:12px;"><strong>847</strong> de 10.247 mapeados (8.3%)</div>
+      <div style="height:6px;background:var(--bg);border-radius:1px;border:1px solid var(--border);overflow:hidden;margin-bottom:16px;"><div style="width:8.3%;height:100%;background:var(--accent);"></div></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;"><input type="text" placeholder="Cód. Protheus..." style="flex:1;padding:8px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);font-size:11px;font-family:var(--mono);"><input type="text" placeholder="P/N..." style="flex:1;padding:8px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);font-size:11px;font-family:var(--mono);"><button class="arrival-btn">Mapear</button></div>
+    </div></div>
+    <div class="card"><div class="card-head"><span class="card-title">Onboarding Aeronaves</span></div><div class="card-body">
+      <div style="font-size:11px;color:var(--text-secondary);margin-bottom:12px;"><strong>62</strong> de 100 no FlytCore</div>
+      <div style="height:6px;background:var(--bg);border-radius:1px;border:1px solid var(--border);overflow:hidden;margin-bottom:16px;"><div style="width:62%;height:100%;background:var(--green);"></div></div>
+      <div style="display:flex;gap:8px;"><button class="topbar-btn" style="flex:1;justify-content:center;border-color:var(--accent);color:var(--accent);" onclick="openWizard()">+ Wizard</button><button class="topbar-btn" style="flex:1;justify-content:center;">Importar Lote</button></div>
+    </div></div>
+  </div>
+  <div class="card full-width" style="margin-top:16px;"><div class="card-head"><span class="card-title">Configurações Gerais</span></div><div class="card-body">
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;"><span>Importação automática Protheus</span><span style="color:var(--green);font-weight:600;">Ativada (6h)</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;"><span>Alerta desatualizado</span><span class="mono">Após 24h</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;"><span>Threshold amarelo</span><span class="mono">50 horas</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;"><span>Foto obrigatória (Crit. A)</span><span style="color:var(--green);font-weight:600;">Ativada</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;"><span>Compressão de foto</span><span class="mono">~300KB</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:12px;"><span>Taxa de câmbio padrão (USD/BRL)</span><span class="mono">R$ 5,45</span></div>
+  </div></div>
+</div>
+
+  </div>
+</div>
+
+<script>
+// ================================================================
+// AtivsCore — Asset Lifecycle Intelligence Engine
+// Propriedade Intelectual de Murilo Rafael Voltolini
+// CPF: 037.761.049-61 | Registro INPI Código 730
+// © 2026 Todos os direitos reservados
+// ================================================================
+console.log("%c AtivsCore® — Asset Lifecycle Intelligence Engine ", "background:#0066FF;color:#fff;font-size:12px;font-weight:bold;padding:4px 8px;border-radius:2px;");
+console.log("%c Propriedade Intelectual de Murilo Rafael Voltolini ", "color:#666;font-size:10px;");
+console.log("%c Registro INPI — Programa de Computador — Código 730 ", "color:#666;font-size:10px;");
+console.log("%c © 2026 Todos os direitos reservados ", "color:#999;font-size:9px;");
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+
+const pageTitles = {"dashboard":"Dashboard da Frota","os":"Ordens de Serviço","detalhe":"Detalhe da Aeronave","simulador":"Simulador de Projeção","requisicoes":"Requisições de Campo","reparaveis":"Reparáveis em Trânsito","estoque":"Estoque (Protheus)","pedidos":"Pedidos de Compra","compliance":"Conformidade AD/SB","auditoria":"Auditoria Rápida","log":"Log de Auditoria","usuarios":"Usuários","importacao":"Importação de Dados (5 Fontes)","config":"Configurações"};
+
+function navTo(pageId, el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const t = document.getElementById('page-' + pageId);
+  if(t) { void t.offsetWidth; t.classList.add('active'); }
+  const title = pageTitles[pageId] || pageId;
+  document.querySelector(".topbar-title").textContent = pageTitles[pageId] || pageId;
+}
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'}) + ' \u00b7 ' + now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+updateClock(); setInterval(updateClock, 60000);
+
+(function(){
+  const el = document.getElementById('availChart');
+  if(!el) return;
+  [82,84,80,78,85,83,79,81,77,82,84,86,80,75,78,82,84,81,79,83,85,80,78,82,84,81,79,83,85,82].forEach(v => {
+    const bar = document.createElement('div');
+    bar.className = 'avail-bar';
+    bar.style.height = Math.max(8, ((v-70)/30)*60) + 'px';
+    bar.style.background = v>=80?'var(--green)':v>=75?'var(--yellow)':'var(--red)';
+    bar.style.opacity = '0.6';
+    bar.title = v + '% dispon\u00edvel';
+    el.appendChild(bar);
+  });
+})();
+
+document.querySelectorAll('.filter-group').forEach(g => {
+  g.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      g.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+});
+
+// =========================================
+// WIZARD + QR CODE
+// =========================================
+let wizardStep = 0;
+const stepNames = ['Dados da Aeronave','Componentes','Revisão','QR Code'];
+
+function openWizard() {
+  wizardStep = 0;
+  document.getElementById('wizardOverlay').classList.add('open');
+  renderWizardStep();
+  // Reset form
+  document.getElementById('wz-prefix').value = '';
+  document.getElementById('wz-model').value = 'EC135 T3';
+  document.getElementById('wz-sn').value = '';
+  document.getElementById('wz-hours').value = '';
+  document.getElementById('wz-cycles').value = '';
+  document.getElementById('wz-base').value = 'Curitiba';
+  document.getElementById('qr-container').innerHTML = '';
+}
+
+function closeWizard() {
+  document.getElementById('wizardOverlay').classList.remove('open');
+}
+
+function renderWizardStep() {
+  document.querySelectorAll('.wizard-step').forEach((s,i) => {
+    s.classList.remove('active','done');
+    if (i < wizardStep) s.classList.add('done');
+    if (i === wizardStep) s.classList.add('active');
+  });
+  document.querySelectorAll('.wz-panel').forEach((p,i) => {
+    p.classList.toggle('active', i === wizardStep);
+  });
+  // Buttons
+  document.getElementById('wz-back').style.display = wizardStep === 0 ? 'none' : 'inline-flex';
+  const nextBtn = document.getElementById('wz-next');
+  if (wizardStep === 2) { nextBtn.textContent = 'Gerar QR Code'; nextBtn.style.background = 'var(--green)'; }
+  else if (wizardStep === 3) { nextBtn.style.display = 'none'; }
+  else { nextBtn.textContent = 'Próximo'; nextBtn.style.background = 'var(--accent)'; nextBtn.style.display = 'inline-flex'; }
+}
+
+function wizardNext() {
+  if (wizardStep === 0) {
+    const prefix = document.getElementById('wz-prefix').value.trim();
+    if (!prefix) { document.getElementById('wz-prefix').style.borderColor = 'var(--red)'; document.getElementById('wz-prefix').focus(); return; }
+    document.getElementById('wz-prefix').style.borderColor = '';
+  }
+  if (wizardStep === 2) { generateQR(); }
+  if (wizardStep < 3) { wizardStep++; renderWizardStep(); }
+  if (wizardStep === 2) { fillReview(); }
+}
+
+function wizardBack() {
+  if (wizardStep > 0) { wizardStep--; renderWizardStep(); }
+}
+
+function fillReview() {
+  const p = document.getElementById('wz-prefix').value || 'PR-XXX';
+  const m = document.getElementById('wz-model').value;
+  const s = document.getElementById('wz-sn').value || '—';
+  const h = document.getElementById('wz-hours').value || '0';
+  const c = document.getElementById('wz-cycles').value || '0';
+  const b = document.getElementById('wz-base').value;
+  document.getElementById('review-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div><div class="wz-label">Prefixo</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;">${p.toUpperCase()}</div></div>
+      <div><div class="wz-label">Modelo</div><div style="font-size:13px;font-weight:600;">${m}</div></div>
+      <div><div class="wz-label">Serial Number</div><div class="mono" style="font-size:13px;">${s}</div></div>
+      <div><div class="wz-label">Base</div><div style="font-size:13px;">${b}</div></div>
+      <div><div class="wz-label">Horas Totais</div><div class="mono" style="font-size:13px;">${h}h</div></div>
+      <div><div class="wz-label">Ciclos</div><div class="mono" style="font-size:13px;">${c}</div></div>
+    </div>
+    <div style="margin-top:14px;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);font-size:10px;color:var(--text-muted);">
+      <strong>5 componentes</strong> serão cadastrados com os dados padrão do modelo ${m}. Você poderá editar individualmente após o cadastro.
+    </div>`;
+}
+
+function generateQR() {
+  const prefix = (document.getElementById('wz-prefix').value || 'PR-XXX').toUpperCase();
+  const model = document.getElementById('wz-model').value;
+  const sn = document.getElementById('wz-sn').value || 'N/A';
+  const token = crypto.randomUUID ? crypto.randomUUID() : 'a7f3e2b1-4c5d-6e7f-' + Math.random().toString(36).substring(2, 14);
+
+  const container = document.getElementById('qr-container');
+  container.innerHTML = '';
+
+  // Store for printing
+  window._lastQR = { prefix, model, sn, token };
+
+  new QRCode(container, {
+    text: token,
+    width: 200,
+    height: 200,
+    colorDark: '#0E0E0E',
+    colorLight: '#FFFFFF',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  document.getElementById('qr-prefix-display').textContent = prefix;
+  document.getElementById('qr-model-display').textContent = model + ' · S/N ' + sn;
+  document.getElementById('qr-token-display').textContent = token;
+
+  // Update print area
+  const printArea = document.getElementById('printArea');
+  const printQR = document.getElementById('print-qr');
+  printQR.innerHTML = '';
+  new QRCode(printQR, { text: token, width: 280, height: 280, colorDark:'#000', colorLight:'#fff', correctLevel: QRCode.CorrectLevel.H });
+  document.getElementById('print-prefix').textContent = prefix;
+  document.getElementById('print-model').textContent = model + ' · S/N ' + sn;
+  document.getElementById('print-token').textContent = token;
+}
+
+function printQRCode() {
+  const printArea = document.getElementById('printArea');
+  printArea.style.display = 'block';
+  setTimeout(() => { window.print(); setTimeout(() => { printArea.style.display = 'none'; }, 500); }, 300);
+}
+
+function downloadQRPDF() {
+  // Simple approach: open print dialog which allows saving as PDF
+  printQRCode();
+}
+
+function copyToken() {
+  const token = document.getElementById('qr-token-display').textContent;
+  navigator.clipboard.writeText(token).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ Copiado';
+    setTimeout(() => { btn.textContent = 'Copiar Token'; }, 2000);
+  });
+}
+</script>
+
+<!-- ============ WIZARD MODAL ============ -->
+<div class="modal-overlay" id="wizardOverlay" onclick="if(event.target===this)closeWizard()">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Cadastrar Nova Aeronave</span>
+      <div class="modal-close" onclick="closeWizard()">&times;</div>
+    </div>
+    <div class="wizard-steps">
+      <div class="wizard-step active">1. Dados</div>
+      <div class="wizard-step">2. Componentes</div>
+      <div class="wizard-step">3. Revisão</div>
+      <div class="wizard-step">4. QR Code</div>
+    </div>
+    <div class="modal-body">
+
+      <!-- STEP 1: Dados -->
+      <div class="wz-panel active" id="wz-step-0">
+        <div class="wz-row" style="margin-bottom:14px;">
+          <div class="wz-field"><label class="wz-label">Prefixo (Matrícula ANAC) *</label><input class="wz-input mono" id="wz-prefix" placeholder="PR-XXX" style="font-size:16px;font-weight:700;text-transform:uppercase;"></div>
+          <div class="wz-field"><label class="wz-label">Modelo</label><select class="wz-input" id="wz-model"><option>EC135 T3</option><option>AW139</option><option>H145</option><option>Bell 407GXi</option><option>Bell 429</option><option>EC130 T2</option></select></div>
+        </div>
+        <div class="wz-row" style="margin-bottom:14px;">
+          <div class="wz-field"><label class="wz-label">Fabricante</label><select class="wz-input"><option>Airbus Helicopters</option><option>Leonardo</option><option>Bell</option></select></div>
+          <div class="wz-field"><label class="wz-label">Número de Série (S/N)</label><input class="wz-input mono" id="wz-sn" placeholder="Ex: 2104"></div>
+        </div>
+        <div class="wz-row3" style="margin-bottom:14px;">
+          <div class="wz-field"><label class="wz-label">Horas Totais</label><input class="wz-input mono" id="wz-hours" type="number" placeholder="0.0"></div>
+          <div class="wz-field"><label class="wz-label">Ciclos Totais</label><input class="wz-input mono" id="wz-cycles" type="number" placeholder="0"></div>
+          <div class="wz-field"><label class="wz-label">Ano Fabricação</label><input class="wz-input mono" type="number" value="2020"></div>
+        </div>
+        <div class="wz-field"><label class="wz-label">Base Principal</label><select class="wz-input" id="wz-base"><option>Curitiba</option><option>São Paulo</option><option>Rio de Janeiro</option><option>Macaé</option><option>Itajaí</option></select></div>
+      </div>
+
+      <!-- STEP 2: Componentes -->
+      <div class="wz-panel" id="wz-step-1">
+        <div style="padding:10px 14px;background:var(--accent-light);border:1px solid #B8D4FF;border-radius:var(--radius);font-size:11px;color:var(--accent);margin-bottom:16px;">
+          Os componentes padrão do modelo selecionado foram carregados automaticamente. Você pode editar após o cadastro.
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Componente</th><th>P/N</th><th>S/N</th><th>Crit.</th><th>TBO</th></tr></thead>
+          <tbody>
+            <tr><td>Turbina</td><td><input class="wz-input mono" value="3G6220V03" style="padding:4px 8px;font-size:10px;width:120px;"></td><td><input class="wz-input mono" placeholder="S/N" style="padding:4px 8px;font-size:10px;width:80px;"></td><td><span class="crit a">A</span></td><td class="mono" style="font-size:11px;">3.500h</td></tr>
+            <tr><td>Main Gearbox</td><td><input class="wz-input mono" value="EC135-MGB" style="padding:4px 8px;font-size:10px;width:120px;"></td><td><input class="wz-input mono" placeholder="S/N" style="padding:4px 8px;font-size:10px;width:80px;"></td><td><span class="crit a">A</span></td><td class="mono" style="font-size:11px;">5.000h</td></tr>
+            <tr><td>Pás Rotor Principal</td><td><input class="wz-input mono" value="355A11-0054" style="padding:4px 8px;font-size:10px;width:120px;"></td><td><input class="wz-input mono" placeholder="S/N" style="padding:4px 8px;font-size:10px;width:80px;"></td><td><span class="crit a">A</span></td><td class="mono" style="font-size:11px;">10.000h</td></tr>
+            <tr><td>Starter Generator</td><td><input class="wz-input mono" value="6871103-A" style="padding:4px 8px;font-size:10px;width:120px;"></td><td><input class="wz-input mono" placeholder="S/N" style="padding:4px 8px;font-size:10px;width:80px;"></td><td><span class="crit a">A</span></td><td class="mono" style="font-size:11px;">3.000h</td></tr>
+            <tr><td>Servo Coletivo</td><td><input class="wz-input mono" value="0530035-3" style="padding:4px 8px;font-size:10px;width:120px;"></td><td><input class="wz-input mono" placeholder="S/N" style="padding:4px 8px;font-size:10px;width:80px;"></td><td><span class="crit a">A</span></td><td class="mono" style="font-size:11px;">5.000h</td></tr>
+          </tbody>
+        </table>
+        <button class="topbar-btn" style="margin-top:12px;font-size:11px;">+ Adicionar Componente</button>
+      </div>
+
+      <!-- STEP 3: Review -->
+      <div class="wz-panel" id="wz-step-2">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Confirme os dados antes de gerar o QR Code</div>
+        <div id="review-content" style="padding:16px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);"></div>
+      </div>
+
+      <!-- STEP 4: QR Code -->
+      <div class="wz-panel" id="wz-step-3">
+        <div class="qr-result">
+          <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:8px;">✓ Aeronave cadastrada com sucesso</div>
+          <div style="font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:2px;margin-bottom:2px;" id="qr-prefix-display">PR-XXX</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;" id="qr-model-display">EC135 T3</div>
+          <div id="qr-container" style="display:inline-block;padding:12px;background:#fff;border:1px solid var(--border);border-radius:var(--radius);"></div>
+          <div class="qr-info">Escaneie com o app FlytCore Field para acessar esta aeronave</div>
+          <div class="qr-token" id="qr-token-display"></div>
+          <div class="qr-actions">
+            <button class="btn-accent" onclick="printQRCode()">🖨 Imprimir Adesivo</button>
+            <button class="btn-accent" onclick="downloadQRPDF()" style="background:var(--green);">📄 Baixar PDF A4</button>
+            <button class="btn-ghost" onclick="copyToken()" id="copyBtn">Copiar Token</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" id="wz-back" onclick="wizardBack()" style="display:none;">← Voltar</button>
+      <div style="flex:1;"></div>
+      <button class="btn-accent" id="wz-next" onclick="wizardNext()">Próximo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PRINT AREA ============ -->
+<div id="printArea" class="print-only">
+  <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;letter-spacing:2px;color:#000;margin-bottom:8px;">FLYTCORE</div>
+  <div style="width:1px;height:1px;border-bottom:1px solid #ccc;width:300px;margin:8px auto;"></div>
+  <div id="print-qr" style="margin:20px auto;display:inline-block;"></div>
+  <div style="font-family:'DM Mono',monospace;font-size:28px;font-weight:700;letter-spacing:3px;margin-top:12px;" id="print-prefix">PR-XXX</div>
+  <div style="font-size:14px;color:#555;margin-top:4px;" id="print-model">EC135 T3</div>
+  <div style="font-family:'DM Mono',monospace;font-size:9px;color:#999;margin-top:16px;word-break:break-all;max-width:400px;margin-left:auto;margin-right:auto;" id="print-token"></div>
+  <div style="margin-top:20px;font-size:10px;color:#999;">Escanear com FlytCore Field para consulta</div>
+</div>
+
+</body>
+</html>
